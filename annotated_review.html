@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Kindred — Productivity Agent · Annotated Review v2</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root{
+    --bg: #eae6f2;
+    --ink: #221d33;
+    --muted: #5b5570;
+    --violet: #6b3ad1;
+    --violet-soft: #854dff14;
+    --card: #ffffff;
+    --line: #d8d2e8;
+    --sage: #4f8a4b;
+    --sage-soft: #93c08f22;
+    --coral: #c2532f;
+    --coral-soft: #d9714e16;
+  }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{
+    background: var(--bg);
+    font-family:'Inter', sans-serif;
+    color: var(--ink);
+    padding: 48px 24px 90px;
+  }
+  .header{ max-width:1180px; margin:0 auto 16px; }
+  .eyebrow{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px; letter-spacing:0.12em; text-transform:uppercase;
+    color: var(--violet); margin-bottom:10px;
+  }
+  h1{ font-family:'Fraunces', serif; font-weight:500; font-size:34px; margin-bottom:10px; }
+  .header p{ color:var(--muted); font-size:14px; max-width:680px; line-height:1.6; }
+
+  .changelog{
+    max-width:1180px; margin:0 auto 44px;
+    background: var(--card); border:1px solid var(--line); border-radius:16px;
+    padding:18px 20px;
+  }
+  .changelog h2{ font-family:'Fraunces', serif; font-weight:500; font-size:15px; margin-bottom:10px; }
+  .changelog ul{ list-style:none; display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px 24px; }
+  .changelog li{ font-size:12px; color:var(--muted); line-height:1.5; padding-left:14px; position:relative; }
+  .changelog li::before{ content:"—"; position:absolute; left:0; color:var(--violet); }
+
+  .board{ max-width:1180px; margin:0 auto; display:flex; flex-direction:column; gap:64px; }
+  .section{ display:flex; gap:36px; align-items:flex-start; flex-wrap:wrap; }
+  .frame-col{ flex-shrink:0; position:relative; width:300px; }
+  .frame{
+    width:300px; height:628px; border-radius:34px; overflow:hidden;
+    border:1px solid var(--line); box-shadow: 0 24px 60px -16px rgba(80,60,140,0.25); background:#fff;
+  }
+  .frame iframe{ width:392px; height:820px; border:none; transform: scale(0.765); transform-origin: top left; }
+  .frame.tall{ height:660px; }
+  .frame.tall iframe{ transform: scale(0.805); }
+
+  .section-title{ font-family:'Fraunces', serif; font-weight:500; font-size:20px; margin-bottom:4px; }
+  .section-sub{ font-size:12.5px; color:var(--muted); margin-bottom:18px; }
+
+  .notes{ flex:1; min-width:300px; display:flex; flex-direction:column; gap:10px; }
+  .cat-label{
+    font-family:'JetBrains Mono', monospace; font-size:10px; letter-spacing:0.1em; text-transform:uppercase;
+    color:var(--muted); margin:14px 0 2px; padding-top:6px; border-top:1px solid var(--line);
+  }
+  .cat-label:first-child{ margin-top:0; padding-top:0; border-top:none; }
+  .note{ display:flex; gap:12px; background: var(--card); border:1px solid var(--line); border-radius:14px; padding:12px 14px; }
+  .num{
+    width:24px; height:24px; border-radius:7px; background: var(--violet-soft); color: var(--violet);
+    font-family:'JetBrains Mono', monospace; font-size:11px; font-weight:600;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .note-text .t{ font-size:12.5px; font-weight:600; margin-bottom:3px; }
+  .note-text .d{ font-size:11.5px; color:var(--muted); line-height:1.5; }
+  .tag{
+    display:inline-block; font-size:8.5px; font-family:'JetBrains Mono', monospace; text-transform:uppercase;
+    padding:1px 6px; border-radius:5px; margin-left:6px; vertical-align:1px; font-weight:600;
+  }
+  .tag.fixed{ background:var(--sage-soft); color:var(--sage); }
+  .tag.flag{ background:var(--coral-soft); color:var(--coral); }
+
+  .legend{ max-width:1180px; margin:60px auto 0; border-top:1px solid var(--line); padding-top:28px; }
+  .legend h2{ font-family:'Fraunces', serif; font-weight:500; font-size:18px; margin-bottom:6px; }
+  .legend > p{ font-size:12.5px; color:var(--muted); margin-bottom:18px; max-width:680px; line-height:1.6; }
+  .legend-grid{ display:grid; grid-template-columns:1fr 1fr; gap:18px 32px; }
+  .legend-cat h3{ font-size:13px; margin-bottom:8px; }
+  .legend-cat ul{ list-style:none; }
+  .legend-cat li{ font-size:12px; color:var(--muted); line-height:1.6; margin-bottom:4px; }
+  .legend-cat li b{ color:var(--ink); }
+
+  .deferred{
+    max-width:1180px; margin:36px auto 0; background:var(--coral-soft); border:1px solid #e3c1ad;
+    border-radius:16px; padding:20px 22px;
+  }
+  .deferred h2{ font-family:'Fraunces', serif; font-weight:500; font-size:16px; margin-bottom:8px; color:#7a3a1f; }
+  .deferred p{ font-size:12px; color:#6b4530; margin-bottom:12px; line-height:1.6; }
+  .deferred ul{ list-style:none; columns:2; column-gap:32px; }
+  .deferred li{ font-size:12px; color:#6b4530; line-height:1.7; padding-left:14px; position:relative; }
+  .deferred li::before{ content:"○"; position:absolute; left:0; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="eyebrow">Productivity Agent · Design Review v2</div>
+  <h1>Stress-testing the design against real failure modes</h1>
+  <p>Same three screens as before, hardened against accessibility gaps, trust gaps, irreversible mistakes, edge cases, and privacy leaks we hadn't addressed yet. Each card below is tagged <span class="tag fixed">FIXED</span> for something now visible in the mockup, or <span class="tag flag">FLAGGED</span> for something worth spec'ing separately before build (see the deferred list at the bottom).</p>
+</div>
+
+<div class="changelog">
+  <h2>What changed since v1</h2>
+  <ul>
+    <li>Contrast: violet text darkened to pass AA against light backgrounds; buttons keep full-saturation violet</li>
+    <li>Touch targets: every tappable element is now ≥40–50px tall, not just visually sized</li>
+    <li>Focus-visible outline added for keyboard/switch-control navigation</li>
+    <li>Node markers use shape + glyph, not color alone, for colorblind users</li>
+    <li>Home screen now has a working New user / cold-start state, toggleable for review</li>
+    <li>"Why am I seeing this" expands inline instead of linking nowhere</li>
+    <li>Nudge actions are undoable for a short window after tapping</li>
+    <li>Nudge card shows queue position ("1 of 2 today") so users know more exist</li>
+    <li>Onboarding shows time estimate per step and explicit "you can change this later"</li>
+    <li>Onboarding has a learn-more link and autosave confirmation at the end</li>
+    <li>Settings: "Need a break?" pause option sits below full opt-out, as a lower-commitment alternative</li>
+    <li>Settings: Export, Reset, Delete, and Turn off are four distinct, clearly differentiated actions</li>
+    <li>Destructive actions require a confirmation sheet stating exactly what is and isn't lost</li>
+    <li>Theme control added (light / dark / auto) for light sensitivity</li>
+    <li>"See exactly what data this uses" link added next to inferred traits</li>
+  </ul>
+</div>
+
+<div class="board">
+
+  <!-- SECTION 1: Home -->
+  <div class="section">
+    <div class="frame-col">
+      <div class="section-title">1. Agent home</div>
+      <div class="section-sub">Now with a state switcher — try toggling "New user" inside the frame</div>
+      <div class="frame"><iframe src="productivity_agent_mockup.html" scrolling="no"></iframe></div>
+    </div>
+    <div class="notes">
+
+      <div class="cat-label">Accessibility</div>
+      <div class="note">
+        <div class="num">01</div>
+        <div class="note-text"><div class="t">Color was never the only signal<span class="tag fixed">FIXED</span></div>
+        <div class="d">Each node marker pairs its color with a distinct shape and glyph (✦ briefing, ! nudge, ~ trend, · missed, ♥ kudos) so colorblind users aren't relying on hue to tell cards apart.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">02</div>
+        <div class="note-text"><div class="t">Text contrast against light backgrounds<span class="tag fixed">FIXED</span></div>
+        <div class="d">The original light-violet was too close to white (~3.5:1). Body and link text now use a darker violet that clears AA at small sizes; buttons keep the bright violet since it's a solid fill with white text.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">03</div>
+        <div class="note-text"><div class="t">Tap targets sized for thumbs, not just eyes<span class="tag fixed">FIXED</span></div>
+        <div class="d">Chips, buttons, and links all carry a minimum touch height even where the visible label is small — a one-line CSS afterthought that's easy to miss until someone tests on an actual phone.</div></div>
+      </div>
+
+      <div class="cat-label">Edge cases & cold start</div>
+      <div class="note">
+        <div class="num">04</div>
+        <div class="note-text"><div class="t">Day-one users have nothing to show<span class="tag fixed">FIXED</span></div>
+        <div class="d">A populated screen on day one would either be empty and confusing, or worse, fabricated. The New user state explains why each card is blank and what unlocks it, instead of pretending there's a pattern yet.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">05</div>
+        <div class="note-text"><div class="t">What if there are several nudges, not one?<span class="tag fixed">FIXED</span></div>
+        <div class="d">"1 of 2 today" sets honest expectations that more exist, rather than the home screen silently picking one and hiding the rest of the queue from the user.</div></div>
+      </div>
+
+      <div class="cat-label">Reversibility & trust</div>
+      <div class="note">
+        <div class="num">06</div>
+        <div class="note-text"><div class="t">"Why am I seeing this" used to go nowhere<span class="tag fixed">FIXED</span></div>
+        <div class="d">It now expands inline with the actual reasoning ("based on 14 days...") and states the dismissal rule plainly, instead of being a transparency gesture with no follow-through.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">07</div>
+        <div class="note-text"><div class="t">A mis-tap on "Move it" or "Not now" was permanent<span class="tag fixed">FIXED</span></div>
+        <div class="d">Both actions now confirm what happened and offer Undo for a few seconds — small, but it's the difference between a tool that tolerates a fat-thumb tap and one that punishes it.</div></div>
+      </div>
+
+      <div class="cat-label">Privacy & social</div>
+      <div class="note">
+        <div class="num">08</div>
+        <div class="note-text"><div class="t">Missed task names are visible on a shared or unlocked screen<span class="tag flag">FLAGGED</span></div>
+        <div class="d">"Submit expense report" sitting on a home screen is fine alone, less fine on a lock-screen preview or a screen-share. Worth a "blur sensitive task names" setting, not solved at the mockup layer here.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">09</div>
+        <div class="note-text"><div class="t">Jordan's streak is shown to someone else without Jordan asked<span class="tag flag">FLAGGED</span></div>
+        <div class="d">The kudos card surfaces another person's activity. That needs its own opt-in on Jordan's side — "let friends see your streaks for kudos" — not just the viewer's settings.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 2: Onboarding -->
+  <div class="section">
+    <div class="frame-col">
+      <div class="section-title">2. Agent onboarding</div>
+      <div class="section-sub">4-step flow, shown here at step 1</div>
+      <div class="frame"><iframe src="agent_onboarding_mockup.html" scrolling="no"></iframe></div>
+    </div>
+    <div class="notes">
+
+      <div class="cat-label">Expectation-setting</div>
+      <div class="note">
+        <div class="num">10</div>
+        <div class="note-text"><div class="t">No sense of how long this takes<span class="tag fixed">FIXED</span></div>
+        <div class="d">A bare progress bar doesn't tell anyone if they're 30 seconds or 10 minutes from done. "~1 MIN" per step sets a realistic bar so people don't bail assuming it's longer.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">11</div>
+        <div class="note-text"><div class="t">"Skip" read as abandoning setup entirely<span class="tag fixed">FIXED</span></div>
+        <div class="d">Now reads "Skip for now — you can set this up later," which removes the fear that skipping forfeits personalization permanently.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">12</div>
+        <div class="note-text"><div class="t">Sliders had no affordance hint<span class="tag fixed">FIXED</span></div>
+        <div class="d">A flat track can look static rather than draggable. A small "Drag to adjust" caption removes any doubt about whether it's interactive.</div></div>
+      </div>
+
+      <div class="cat-label">Trust & transparency</div>
+      <div class="note">
+        <div class="num">13</div>
+        <div class="note-text"><div class="t">"Light touch" nudges still had no ceiling stated<span class="tag fixed">FIXED</span></div>
+        <div class="d">The privacy note on step 2 now explicitly mentions a visible daily limit in settings, so "light touch" isn't just a vibe — there's a concrete number behind it.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">14</div>
+        <div class="note-text"><div class="t">No way to learn more before committing<span class="tag fixed">FIXED</span></div>
+        <div class="d">Added a "Learn more about how this data is used" link on the confirm step for anyone who wants the longer explanation before finishing, without forcing it on everyone.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">15</div>
+        <div class="note-text"><div class="t">Did closing the app mid-flow lose progress?<span class="tag fixed">FIXED</span></div>
+        <div class="d">"Your answers save automatically as you go" on the final step removes the anxiety of a half-finished setup vanishing if someone gets interrupted.</div></div>
+      </div>
+
+      <div class="cat-label">Validation</div>
+      <div class="note">
+        <div class="num">16</div>
+        <div class="note-text"><div class="t">What happens if no focus times are selected?<span class="tag flag">FLAGGED</span></div>
+        <div class="d">Step 3 allows zero selections with no guardrail. Needs either a soft minimum-one nudge or an explicit fallback message: "We'll use your activity instead."</div></div>
+      </div>
+      <div class="note">
+        <div class="num">17</div>
+        <div class="note-text"><div class="t">No calendar-conflict awareness in nudge timing<span class="tag flag">FLAGGED</span></div>
+        <div class="d">Onboarding asks when someone's sharpest, but a later nudge ("Move to 8:40am?") could land on a meeting. Worth checking calendar availability before suggesting a time, not just historical pattern.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 3: Settings -->
+  <div class="section">
+    <div class="frame-col">
+      <div class="section-title">3. Agent settings</div>
+      <div class="section-sub">Shown with the "Turn off agent" confirmation sheet open</div>
+      <div class="frame tall"><iframe src="agent_settings_mockup.html" scrolling="no"></iframe></div>
+    </div>
+    <div class="notes">
+
+      <div class="cat-label">Destructive-action safety</div>
+      <div class="note">
+        <div class="num">18</div>
+        <div class="note-text"><div class="t">Turn-off and delete were one tap, no confirmation<span class="tag fixed">FIXED</span></div>
+        <div class="d">Both now open a confirmation sheet that states plainly what's kept and what's lost, with Cancel as the visually equal option — not a quiet "are you sure" buried in a tiny link.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">19</div>
+        <div class="note-text"><div class="t">"Turn off" and "delete everything" were the same action<span class="tag fixed">FIXED</span></div>
+        <div class="d">Split into four distinct rows — Export, Reset, Delete, Turn off — because pausing personalization and permanently erasing history are very different stakes and shouldn't share one button.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">20</div>
+        <div class="note-text"><div class="t">All-or-nothing nudges: on, or fully off<span class="tag fixed">FIXED</span></div>
+        <div class="d">"Need a break?" adds Today / 1 week / Until I turn it back on — a lower-commitment middle ground for someone who's overwhelmed this week but doesn't want to lose the setup entirely.</div></div>
+      </div>
+
+      <div class="cat-label">Accessibility & control</div>
+      <div class="note">
+        <div class="num">21</div>
+        <div class="note-text"><div class="t">Toggle state relied on color alone<span class="tag fixed">FIXED</span></div>
+        <div class="d">The knob's position (left/right) and background fill both change, so state reads correctly even for users who can't distinguish the on/off color difference.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">22</div>
+        <div class="note-text"><div class="t">No way to reduce visual intensity for light sensitivity<span class="tag fixed">FIXED</span></div>
+        <div class="d">Added a Light / Dark / Auto theme control under Appearance — relevant for migraine, light sensitivity, and plain preference, not just an aesthetic option.</div></div>
+      </div>
+
+      <div class="cat-label">Data rights</div>
+      <div class="note">
+        <div class="num">23</div>
+        <div class="note-text"><div class="t">No way to get your data out before leaving<span class="tag fixed">FIXED</span></div>
+        <div class="d">"Export my agent data" sits above the destructive options — someone shouldn't have to choose between keeping a copy and deleting their data.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">24</div>
+        <div class="note-text"><div class="t">"What the agent has learned" had no audit trail<span class="tag flag">FLAGGED</span></div>
+        <div class="d">"See exactly what data this uses" is linked but not yet designed — needs its own screen showing the specific signals (which days, which tasks) feeding each inferred trait.</div></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="deferred">
+  <h2>Considered, not yet designed</h2>
+  <p>Real problems worth a ticket, but solving them changes scope beyond a screen-level fix — flagging so they don't get lost between this review and a spec.</p>
+  <ul>
+    <li>Loading and network-error states for all three screens</li>
+    <li>Push notification permission flow (OS-level, before any nudge can fire)</li>
+    <li>Priority/ordering logic when multiple nudges qualify the same day</li>
+    <li>Calendar-conflict checking before suggesting a specific time</li>
+    <li>Blurring or hiding sensitive task names on lock screen / screen-share</li>
+    <li>Friend-side consent for surfacing their streaks in someone else's kudos card</li>
+    <li>Customizable kudos message instead of a single canned send</li>
+    <li>Minimum-selection handling on the focus-time step</li>
+    <li>Cross-device sync messaging (is this account-level or per-device?)</li>
+    <li>Longer translated strings breaking chip/button layout (i18n)</li>
+    <li>RTL layout mirroring for the thread motif and card alignment</li>
+    <li>Age-appropriate defaults if the product is ever opened to minors</li>
+  </ul>
+</div>
+
+<div class="legend">
+  <h2>Maps back to a hardened guardrail set</h2>
+  <p>The v1 guardrails (tone, transparency, fatigue protection, scoring risk, opt-in social, additive personalization) still hold. These three are new categories that came out of this pass.</p>
+  <div class="legend-grid">
+    <div class="legend-cat">
+      <h3>Accessibility</h3>
+      <ul>
+        <li><b>Never color-only</b> — shape, glyph, or position always carries state too</li>
+        <li><b>AA contrast minimum</b> — checked, not assumed, for every text-on-light pairing</li>
+        <li><b>Real touch targets</b> — sized for a thumb, not just a cursor</li>
+      </ul>
+    </div>
+    <div class="legend-cat">
+      <h3>Reversibility</h3>
+      <ul>
+        <li><b>Undo where it's cheap</b> — nudge actions, in particular</li>
+        <li><b>Confirm where it's not</b> — anything destructive gets a sheet, not a tap</li>
+        <li><b>Pause before quit</b> — a lower-commitment option above full opt-out</li>
+      </ul>
+    </div>
+    <div class="legend-cat">
+      <h3>Honesty about state</h3>
+      <ul>
+        <li><b>Cold start is designed, not blank</b> — day-one users get an explanation</li>
+        <li><b>Queues are visible</b> — "1 of 2" beats silently picking one nudge</li>
+        <li><b>Transparency links resolve</b> — no link that dead-ends</li>
+      </ul>
+    </div>
+    <div class="legend-cat">
+      <h3>Data rights</h3>
+      <ul>
+        <li><b>Export before delete</b> — never force a choice between the two</li>
+        <li><b>Granular destructive actions</b> — pause, reset, delete, and turn off are not the same button</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

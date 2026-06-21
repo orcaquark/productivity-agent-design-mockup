@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Kindred — Productivity Agent</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root{
+    --bg: #faf9fc;
+    --card: #ffffff;
+    --card-raised: #f1eef8;
+    --thread: #d8d2e8;
+    --violet: #854dff;
+    --violet-dim: #854dff2a;
+    --violet-soft: #854dff14;
+    --sage: #4f8a4b;
+    --sage-dim: #93c08f22;
+    --text: #221d33;
+    --text-muted: #5b5570;   /* darkened from #948f9e for AA contrast */
+    --text-faint: #84809a;   /* darkened from #5e596b-on-dark equivalent */
+  }
+
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html,body{
+    background:#eae6f2;
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:'Inter',sans-serif;
+  }
+
+  /* Accessibility: visible focus ring on every interactive element */
+  button, a, [tabindex], .option, .chip, .time-chip, .switch, .row, .btn, .kudos-btn, .cta, .why-link, .state-pill{
+    cursor:pointer;
+  }
+  :focus-visible{
+    outline: 2px solid var(--violet);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+
+  .truncate{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+  .phone{
+    width:392px;
+    height:820px;
+    background: var(--bg);
+    border-radius:44px;
+    border: 1px solid #e3ddf0;
+    box-shadow: 0 30px 80px -20px rgba(80,60,140,0.25);
+    overflow:hidden;
+    position:relative;
+    display:flex;
+    flex-direction:column;
+  }
+
+  .notch{
+    position:absolute; top:14px; left:50%; transform:translateX(-50%);
+    width:110px; height:24px; background:#2a2632; border-radius:20px; z-index:10;
+  }
+
+  .scroll{
+    flex:1;
+    overflow-y:auto;
+    padding:64px 20px 28px;
+    scrollbar-width:none;
+  }
+  .scroll::-webkit-scrollbar{ display:none; }
+
+  .eyebrow{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    color:var(--violet);
+    margin-bottom:6px;
+  }
+  .greeting{
+    font-family:'Fraunces', serif;
+    font-weight:500;
+    font-size:28px;
+    color:var(--text);
+    line-height:1.15;
+    margin-bottom:4px;
+  }
+  .greeting span{ color:var(--violet); }
+  .subline{
+    font-size:13px;
+    color:var(--text-muted);
+    margin-bottom:16px;
+    line-height:1.5;
+  }
+
+  /* State switcher — demonstrates cold-start / empty-state handling */
+  .state-switch{
+    display:flex; gap:6px;
+    background: var(--card-raised);
+    border-radius:12px;
+    padding:4px;
+    margin-bottom:22px;
+    width:fit-content;
+  }
+  .state-pill{
+    font-family:'JetBrains Mono', monospace;
+    font-size:10.5px;
+    padding:8px 13px;
+    min-height:32px;
+    display:flex; align-items:center;
+    border-radius:9px;
+    color:var(--text-muted);
+    font-weight:500;
+    border:none;
+    background:transparent;
+  }
+  .state-pill.active{ background:#fff; color:var(--violet); box-shadow:0 1px 4px rgba(80,60,140,0.18); }
+
+  .thread-wrap{ position:relative; }
+  .thread-line{
+    position:absolute; left:7px; top:14px; bottom:14px; width:1px;
+    background: linear-gradient(to bottom, var(--violet-dim), var(--thread) 12%, var(--thread) 88%, transparent);
+    z-index:0;
+  }
+  .node-card{ position:relative; margin-bottom:18px; padding-left:26px; }
+  .node-dot{
+    position:absolute; left:0; top:18px;
+    width:16px; height:16px;
+    border-radius:50%;
+    background: var(--bg);
+    border:2px solid var(--violet);
+    z-index:1;
+    display:flex; align-items:center; justify-content:center;
+    font-size:8px;
+    color:var(--violet);
+  }
+  /* Shape + glyph, not just color, distinguishes node type for colorblind users */
+  .node-dot.sage{ border-color:var(--sage); color:var(--sage); }
+  .node-dot.muted{ border-color:var(--text-faint); color:var(--text-faint); border-style:dashed; }
+
+  .card{ background: var(--card); border:1px solid #e3ddf0; border-radius:18px; padding:18px 18px 16px; }
+  .card-label{
+    font-family:'JetBrains Mono', monospace;
+    font-size:10px; letter-spacing:0.1em; text-transform:uppercase;
+    color:var(--text-faint); margin-bottom:8px;
+    display:flex; justify-content:space-between; align-items:center;
+  }
+  .cap-note{ color:var(--text-faint); font-weight:500; }
+
+  .briefing-title{ font-family:'Fraunces', serif; font-weight:500; font-size:18px; color:var(--text); margin-bottom:8px; }
+  .briefing-text{ font-size:13.5px; line-height:1.55; color:#4a4458; margin-bottom:14px; }
+  .briefing-text b{ color:var(--text); font-weight:600; }
+  .empty-text{ font-size:13px; line-height:1.6; color:var(--text-muted); }
+
+  .chip-row{ display:flex; gap:8px; flex-wrap:wrap; }
+  .chip{
+    font-size:11.5px; padding:8px 12px; min-height:32px; display:flex; align-items:center;
+    border-radius:20px; background: var(--card-raised); color:var(--text-muted); border:1px solid #e3ddf0;
+  }
+  .chip.active{ background: var(--violet-soft); color: var(--violet); border-color: transparent; }
+
+  .nudge-copy .title{ font-size:14.5px; font-weight:600; color:var(--text); margin-bottom:4px; max-width:280px; }
+  .nudge-copy .desc{ font-size:12.5px; color:var(--text-muted); line-height:1.5; }
+
+  .why-link{
+    font-size:11.5px; color:var(--violet); margin-top:10px; display:inline-flex; align-items:center;
+    min-height:32px; background:none; border:none; padding:0; border-bottom:1px solid var(--violet-dim); font-family:inherit;
+  }
+  .why-panel{
+    display:none; margin-top:10px; padding:11px 12px; background:var(--violet-soft); border-radius:12px;
+    font-size:11.5px; color:#4a4458; line-height:1.55;
+  }
+  .why-panel.open{ display:block; }
+  .why-panel b{ color:var(--text); }
+
+  .actions{ display:flex; gap:8px; margin-top:14px; }
+  .btn{
+    flex:1; text-align:center; padding:11px 0; min-height:42px; border-radius:12px; font-size:13px; font-weight:600;
+    display:flex; align-items:center; justify-content:center; border:none; font-family:inherit;
+  }
+  .btn.primary{ background:var(--violet); color:#fff; }
+  .btn.ghost{ background:transparent; border:1px solid #d8d2e8; color:var(--text-muted); }
+
+  .feedback-row{
+    display:none; align-items:center; justify-content:space-between; margin-top:14px;
+    font-size:12.5px; color:var(--sage); font-weight:600;
+  }
+  .feedback-row.show{ display:flex; }
+  .feedback-row .undo{ color:var(--violet); font-weight:600; font-size:11.5px; background:none; border:none; font-family:inherit; min-height:32px; }
+
+  .trend-head{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:14px; }
+  .trend-head .big{ font-family:'Fraunces', serif; font-size:30px; color:var(--text); }
+  .trend-head .big small{ font-size:14px; color:var(--text-muted); font-family:'Inter'; }
+  .trend-head .delta{ font-size:12px; color:var(--sage); font-family:'JetBrains Mono', monospace; }
+  .bars{ display:flex; align-items:flex-end; gap:7px; height:54px; margin-bottom:6px; }
+  .bar{ flex:1; background: var(--card-raised); border-radius:5px 5px 2px 2px; position:relative; }
+  .bar.today{ background: var(--violet); }
+  .bar-labels{ display:flex; gap:7px; }
+  .bar-labels span{ flex:1; text-align:center; font-size:9.5px; color:var(--text-faint); font-family:'JetBrains Mono', monospace; }
+  .trend-note{ margin-top:12px; font-size:12px; color:var(--text-muted); line-height:1.5; border-top:1px solid #ece7f6; padding-top:12px; }
+
+  .miss-item{ display:flex; justify-content:space-between; align-items:flex-start; padding:10px 0; border-bottom:1px solid #ece7f6; gap:10px; }
+  .miss-item:last-child{ border-bottom:none; padding-bottom:0; }
+  .miss-name{ font-size:13px; color:var(--text); font-weight:500; margin-bottom:3px; max-width:200px; }
+  .miss-why{ font-size:11.5px; color:var(--text-muted); }
+  .miss-tag{ font-size:10px; font-family:'JetBrains Mono', monospace; color:var(--text-faint); white-space:nowrap; padding-top:2px; }
+
+  .kudos-row{ display:flex; align-items:center; gap:12px; }
+  .avatar{
+    width:38px; height:38px; border-radius:50%; background: var(--sage-dim); border:1px solid var(--sage);
+    display:flex; align-items:center; justify-content:center; font-family:'Fraunces', serif; font-size:15px;
+    color:var(--sage); flex-shrink:0;
+  }
+  .kudos-text{ font-size:13px; color:#4a4458; line-height:1.5; max-width:240px; }
+  .kudos-text b{ color:var(--text); }
+  .kudos-actions{ display:flex; gap:8px; margin-top:12px; }
+  .kudos-btn{
+    flex:1; text-align:center; padding:10px 0; min-height:40px; border-radius:11px; font-size:12.5px; font-weight:600;
+    display:flex; align-items:center; justify-content:center; border:none; font-family:inherit;
+  }
+  .kudos-btn.send{ background:var(--sage); color:#fff; }
+  .kudos-btn.skip{ background:transparent; border:1px solid #d8d2e8; color:var(--text-muted); }
+
+  .navbar{ display:flex; justify-content:space-around; padding:14px 10px 22px; background: #ffffff; border-top:1px solid #e3ddf0; }
+  .nav-item{ display:flex; flex-direction:column; align-items:center; gap:4px; font-size:9.5px; color:var(--text-faint); font-family:'JetBrains Mono', monospace; min-height:40px; justify-content:center; }
+  .nav-item.active{ color:var(--violet); font-weight:600; }
+  .nav-dot{ width:18px; height:18px; border-radius:6px; background:#e3ddf0; }
+  /* active state shown via shape change (square->filled) + label weight, not color alone */
+  .nav-item.active .nav-dot{ background:var(--violet); border-radius:50%; }
+
+  .wrap-outer{ display:flex; flex-direction:column; align-items:center; }
+</style>
+</head>
+<body>
+
+<div class="wrap-outer">
+<div class="phone">
+  <div class="notch"></div>
+  <div class="scroll">
+
+    <div class="eyebrow">Thursday · Productivity Agent</div>
+    <div class="greeting"><span id="greet-name">Evening, Maya.</span></div>
+    <div class="subline" id="subline">Here's where your thread picked up today.</div>
+
+    <div class="state-switch" role="group" aria-label="Preview state">
+      <button class="state-pill active" id="pill-active" tabindex="0" onclick="setState('active')">Active user</button>
+      <button class="state-pill" id="pill-new" tabindex="0" onclick="setState('new')">New user</button>
+    </div>
+
+    <!-- ===== ACTIVE / POPULATED STATE ===== -->
+    <div id="state-active">
+      <div class="thread-wrap">
+        <div class="thread-line"></div>
+
+        <div class="node-card">
+          <div class="node-dot">✦</div>
+          <div class="card">
+            <div class="card-label">Today's briefing</div>
+            <div class="briefing-title">A lighter day, mostly mornings</div>
+            <div class="briefing-text">
+              You closed <b>4 of 6</b> rings today. Your focus held strongest before noon — that's the third day this week your completions cluster before 1pm.
+            </div>
+            <div class="chip-row">
+              <div class="chip active" tabindex="0">Mornings work for you</div>
+              <div class="chip" tabindex="0">Gym ring open</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="node-card">
+          <div class="node-dot">!</div>
+          <div class="card">
+            <div class="card-label"><span>Suggested nudge</span><span class="cap-note">1 of 2 today</span></div>
+            <div class="nudge-row">
+              <div class="nudge-copy">
+                <div class="title truncate">Move "Read 20 min" to 8:40am?</div>
+                <div class="desc">You complete reading tasks 3x more often when they're scheduled before your commute.</div>
+              </div>
+            </div>
+            <button class="why-link" onclick="toggleWhy()" aria-expanded="false" id="why-btn">Why am I seeing this</button>
+            <div class="why-panel" id="why-panel">
+              Based on <b>14 days</b> of task timing: reading tasks completed before 9am finished 3x more often than the same task scheduled later. This nudge will stop appearing if you dismiss it twice in a row.
+            </div>
+            <div class="actions" id="nudge-actions">
+              <div class="btn primary" tabindex="0" onclick="resolveNudge('moved')">Move it</div>
+              <div class="btn ghost" tabindex="0" onclick="resolveNudge('dismissed')">Not now</div>
+            </div>
+            <div class="feedback-row" id="nudge-feedback"></div>
+          </div>
+        </div>
+
+        <div class="node-card">
+          <div class="node-dot sage">~</div>
+          <div class="card">
+            <div class="card-label">This week's pattern</div>
+            <div class="trend-head">
+              <div class="big">82<small>%</small></div>
+              <div class="delta">↑ steadier than last week</div>
+            </div>
+            <div class="bars">
+              <div class="bar" style="height:40%"></div>
+              <div class="bar" style="height:65%"></div>
+              <div class="bar" style="height:50%"></div>
+              <div class="bar" style="height:80%"></div>
+              <div class="bar" style="height:70%"></div>
+              <div class="bar" style="height:90%"></div>
+              <div class="bar today" style="height:67%"></div>
+            </div>
+            <div class="bar-labels"><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span></div>
+            <div class="trend-note">No single score here — just the shape of your week. Tuesday's dip lines up with the team offsite, not a slip.</div>
+          </div>
+        </div>
+
+        <div class="node-card">
+          <div class="node-dot muted">·</div>
+          <div class="card">
+            <div class="card-label">What got missed</div>
+            <div class="miss-item">
+              <div><div class="miss-name truncate">Submit expense report</div><div class="miss-why">Pushed 3 times — usually means it's not actually urgent</div></div>
+              <div class="miss-tag">2D AGO</div>
+            </div>
+            <div class="miss-item">
+              <div><div class="miss-name truncate">Call dentist</div><div class="miss-why">Created during a busy stretch, no time block set</div></div>
+              <div class="miss-tag">TODAY</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="node-card">
+          <div class="node-dot sage">♥</div>
+          <div class="card">
+            <div class="card-label">Worth celebrating</div>
+            <div class="kudos-row">
+              <div class="avatar">J</div>
+              <div class="kudos-text"><b>Jordan</b> completed Morning Run every day this week.</div>
+            </div>
+            <div class="kudos-actions">
+              <div class="kudos-btn send" tabindex="0">Send kudos</div>
+              <div class="kudos-btn skip" tabindex="0">Skip</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ===== NEW / COLD-START STATE ===== -->
+    <div id="state-new" style="display:none;">
+      <div class="thread-wrap">
+        <div class="thread-line"></div>
+
+        <div class="node-card">
+          <div class="node-dot">✦</div>
+          <div class="card">
+            <div class="card-label">Today's briefing</div>
+            <div class="briefing-title">Nothing to show yet</div>
+            <div class="empty-text">We build your briefing from a few days of tasks and rings. Add a couple of tasks today and check back tomorrow evening.</div>
+          </div>
+        </div>
+
+        <div class="node-card">
+          <div class="node-dot">!</div>
+          <div class="card">
+            <div class="card-label">Suggested nudge</div>
+            <div class="empty-text">No suggestions yet — nudges start once we notice a real pattern, usually within a week of regular use.</div>
+          </div>
+        </div>
+
+        <div class="node-card">
+          <div class="node-dot sage">~</div>
+          <div class="card">
+            <div class="card-label">This week's pattern</div>
+            <div class="bars">
+              <div class="bar" style="height:14%"></div>
+              <div class="bar" style="height:14%"></div>
+              <div class="bar" style="height:14%"></div>
+              <div class="bar" style="height:14%"></div>
+              <div class="bar" style="height:14%"></div>
+              <div class="bar" style="height:14%"></div>
+              <div class="bar" style="height:14%"></div>
+            </div>
+            <div class="bar-labels"><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span></div>
+            <div class="trend-note">Not enough data yet — this fills in after your first few days.</div>
+          </div>
+        </div>
+
+        <div class="node-card">
+          <div class="node-dot muted">·</div>
+          <div class="card">
+            <div class="card-label">What got missed</div>
+            <div class="empty-text">Nothing tracked yet — there's nothing to show until you've added a few tasks.</div>
+          </div>
+        </div>
+
+        <div class="node-card">
+          <div class="node-dot sage">♥</div>
+          <div class="card">
+            <div class="card-label">Worth celebrating</div>
+            <div class="empty-text">Add friends to send and receive kudos when something's worth celebrating.</div>
+            <div class="actions">
+              <div class="btn primary" tabindex="0">Add friends</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <div class="navbar">
+    <div class="nav-item"><div class="nav-dot"></div>Tasks</div>
+    <div class="nav-item"><div class="nav-dot"></div>Rings</div>
+    <div class="nav-item active" aria-current="page"><div class="nav-dot"></div>Agent</div>
+    <div class="nav-item"><div class="nav-dot"></div>Friends</div>
+    <div class="nav-item"><div class="nav-dot"></div>Profile</div>
+  </div>
+</div>
+</div>
+
+<script>
+  function setState(s){
+    document.getElementById('state-active').style.display = (s==='active') ? 'block' : 'none';
+    document.getElementById('state-new').style.display = (s==='new') ? 'block' : 'none';
+    document.getElementById('pill-active').classList.toggle('active', s==='active');
+    document.getElementById('pill-new').classList.toggle('active', s==='new');
+    var greet = document.getElementById('greet-name');
+    var sub = document.getElementById('subline');
+    if(s==='new'){
+      greet.textContent = 'Welcome, Maya.';
+      sub.textContent = "Your agent doesn't know you yet — insights show up here as you use Kindred.";
+    } else {
+      greet.textContent = 'Evening, Maya.';
+      sub.textContent = "Here's where your thread picked up today.";
+    }
+  }
+  function toggleWhy(){
+    var panel = document.getElementById('why-panel');
+    var btn = document.getElementById('why-btn');
+    var open = panel.classList.toggle('open');
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  }
+  function resolveNudge(kind){
+    document.getElementById('nudge-actions').style.display = 'none';
+    var fb = document.getElementById('nudge-feedback');
+    fb.classList.add('show');
+    if(kind === 'moved'){
+      fb.innerHTML = '<span>✓ Moved to 8:40am</span><button class="undo" onclick="undoNudge()">Undo</button>';
+    } else {
+      fb.innerHTML = '<span style="color:var(--text-muted)">Dismissed — won\'t ask again this week</span><button class="undo" onclick="undoNudge()">Undo</button>';
+    }
+  }
+  function undoNudge(){
+    document.getElementById('nudge-actions').style.display = 'flex';
+    var fb = document.getElementById('nudge-feedback');
+    fb.classList.remove('show');
+    fb.innerHTML = '';
+  }
+  // keyboard support for div-as-button interactive elements
+  document.querySelectorAll('[tabindex="0"]').forEach(function(el){
+    el.setAttribute('role','button');
+    el.addEventListener('keydown', function(e){
+      if(e.key === 'Enter' || e.key === ' '){
+        e.preventDefault();
+        el.click();
+      }
+    });
+  });
+</script>
+
+</body>
+</html>

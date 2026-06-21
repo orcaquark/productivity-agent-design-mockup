@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Kindred — Agent Settings</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root{
+    --bg: #faf9fc;
+    --card: #ffffff;
+    --card-raised: #f1eef8;
+    --thread: #d8d2e8;
+    --violet: #854dff;
+    --violet-dim: #854dff2a;
+    --violet-soft: #854dff14;
+    --sage: #5e9a59;
+    --sage-dim: #93c08f22;
+    --coral-warn: #d9714e;
+    --coral-warn-dim: #d9714e16;
+    --text: #221d33;
+    --text-muted: #6f6a82;
+    --text-faint: #7a7488;
+  }
+
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html,body{
+    background:#eae6f2;
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:'Inter',sans-serif;
+  }
+
+  .phone{
+    width:392px;
+    height:820px;
+    background: var(--bg);
+    border-radius:44px;
+    border: 1px solid #e3ddf0;
+    box-shadow: 0 30px 80px -20px rgba(80,60,140,0.25);
+    overflow:hidden;
+    position:relative;
+    display:flex;
+    flex-direction:column;
+  }
+
+  .notch{
+    position:absolute; top:14px; left:50%; transform:translateX(-50%);
+    width:110px; height:24px; background:#2a2632; border-radius:20px; z-index:10;
+  }
+
+  .topbar{
+    padding:60px 22px 14px;
+    display:flex; align-items:center; gap:12px;
+  }
+  .back{
+    width:30px; height:30px; border-radius:9px;
+    background: var(--card-raised);
+    display:flex; align-items:center; justify-content:center;
+    color:var(--text-muted);
+    font-size:15px;
+    flex-shrink:0;
+  }
+  .topbar .title{
+    font-family:'Fraunces', serif;
+    font-weight:500;
+    font-size:17px;
+    color:var(--text);
+  }
+
+  .scroll{
+    flex:1;
+    overflow-y:auto;
+    padding:10px 20px 24px;
+    scrollbar-width:none;
+  }
+  .scroll::-webkit-scrollbar{ display:none; }
+
+  .eyebrow{
+    font-family:'JetBrains Mono', monospace;
+    font-size:10.5px;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    color:var(--text-faint);
+    margin: 18px 2px 10px;
+  }
+  .eyebrow:first-child{ margin-top:6px; }
+
+  .group{
+    background: var(--card);
+    border:1px solid #e3ddf0;
+    border-radius:16px;
+    overflow:hidden;
+  }
+
+  .row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    padding:14px 16px;
+    border-bottom:1px solid #ece7f6;
+  }
+  .row:last-child{ border-bottom:none; }
+
+  .row-text .t{ font-size:13.5px; color:var(--text); font-weight:500; margin-bottom:2px; }
+  .row-text .d{ font-size:11.5px; color:var(--text-muted); line-height:1.4; }
+  .row-value{
+    font-size:12.5px;
+    color:var(--violet);
+    font-weight:600;
+    text-align:right;
+    flex-shrink:0;
+    display:flex;
+    align-items:center;
+    gap:4px;
+  }
+  .chev{ color:var(--text-faint); font-size:13px; }
+
+  /* toggle switch */
+  .switch{
+    width:42px; height:24px;
+    border-radius:14px;
+    background:#e3ddf0;
+    position:relative;
+    flex-shrink:0;
+  }
+  .switch.on{ background: var(--violet); }
+  .switch .knob{
+    position:absolute; top:3px; left:3px;
+    width:18px; height:18px;
+    border-radius:50%;
+    background:#fff;
+    box-shadow:0 1px 3px rgba(0,0,0,0.2);
+    transition:left .2s;
+  }
+  .switch.on .knob{ left:21px; }
+
+  /* mini slider inline */
+  .mini-track{
+    width:90px;
+    height:5px; border-radius:3px;
+    background:#e3ddf0;
+    position:relative;
+  }
+  .mini-track .fill{
+    position:absolute; left:0; top:0; bottom:0;
+    border-radius:3px;
+    background: var(--violet);
+  }
+  .mini-track .knob{
+    position:absolute; top:50%; transform:translate(-50%,-50%);
+    width:14px; height:14px; border-radius:50%;
+    background:#fff; border:2.5px solid var(--violet);
+  }
+
+  /* tag pills for focus times / chips */
+  .pill-wrap{ display:flex; flex-wrap:wrap; gap:6px; max-width:170px; justify-content:flex-end; }
+  .pill{
+    font-size:10.5px;
+    padding:4px 9px;
+    border-radius:10px;
+    background: var(--violet-soft);
+    color: var(--violet);
+    font-weight:600;
+  }
+
+  .inferred-tag{
+    font-size:9px;
+    font-family:'JetBrains Mono', monospace;
+    letter-spacing:0.04em;
+    color: var(--sage);
+    background: var(--sage-dim);
+    padding:2px 6px;
+    border-radius:6px;
+    margin-left:6px;
+    text-transform:uppercase;
+  }
+
+  .note-card{
+    display:flex; gap:10px;
+    background: var(--violet-soft);
+    border:1px solid var(--violet-dim);
+    border-radius:14px;
+    padding:13px 14px;
+    margin-top:14px;
+  }
+  .note-card .ic{ font-size:15px; flex-shrink:0; }
+  .note-card p{ font-size:11.5px; color:#4a4458; line-height:1.5; }
+  .note-card b{ color:var(--text); }
+
+  .danger-row{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:14px 16px;
+  }
+  .danger-row .t{ font-size:13.5px; color:var(--coral-warn); font-weight:600; }
+  .danger-row .d{ font-size:11.5px; color:var(--text-muted); margin-top:2px; }
+
+  .group-spacer{ height:22px; }
+
+  .pause-row{
+    display:flex; gap:8px; padding:0 16px 14px;
+  }
+  .pause-pill{
+    flex:1;
+    text-align:center;
+    padding:8px 0;
+    border-radius:10px;
+    font-size:11.5px;
+    font-weight:600;
+    background: var(--card-raised);
+    color:var(--text-muted);
+    border:1px solid #e3ddf0;
+  }
+  .pause-pill.active{
+    background: var(--violet-soft);
+    border-color: var(--violet);
+    color: var(--violet);
+  }
+
+  .transparency-link{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 16px;
+  }
+  .transparency-link .t{ font-size:12.5px; color:var(--violet); font-weight:600; }
+
+  .theme-row .seg-toggle{ display:flex; gap:6px; }
+  .seg-btn{
+    padding:6px 12px;
+    border-radius:9px;
+    font-size:11.5px;
+    background: var(--card-raised);
+    color:var(--text-muted);
+    border:1px solid #e3ddf0;
+  }
+  .seg-btn.active{
+    background: var(--violet);
+    color:#fff;
+    border-color: var(--violet);
+  }
+
+  /* Confirmation sheet overlay (demonstrates the destructive-action flow) */
+  .sheet-overlay{
+    position:absolute;
+    inset:0;
+    background: rgba(20,16,30,0.45);
+    display:flex;
+    align-items:flex-end;
+    z-index:30;
+  }
+  .sheet{
+    width:100%;
+    background: var(--card);
+    border-radius:24px 24px 0 0;
+    padding:22px 22px 30px;
+  }
+  .sheet-handle{
+    width:36px; height:4px; border-radius:3px;
+    background:#e3ddf0;
+    margin:0 auto 18px;
+  }
+  .sheet .ic-big{
+    width:46px; height:46px;
+    border-radius:50%;
+    background: var(--coral-warn-dim);
+    display:flex; align-items:center; justify-content:center;
+    font-size:20px;
+    margin-bottom:14px;
+  }
+  .sheet h3{
+    font-family:'Fraunces', serif;
+    font-weight:500;
+    font-size:18px;
+    color:var(--text);
+    margin-bottom:8px;
+  }
+  .sheet p{
+    font-size:12.5px;
+    color:var(--text-muted);
+    line-height:1.6;
+    margin-bottom:20px;
+  }
+  .sheet p b{ color: var(--text); }
+  .sheet-actions{ display:flex; flex-direction:column; gap:9px; }
+  .sheet-btn{
+    width:100%;
+    padding:13px 0;
+    border-radius:13px;
+    text-align:center;
+    font-size:13.5px;
+    font-weight:600;
+  }
+  .sheet-btn.danger{ background: var(--coral-warn); color:#fff; }
+  .sheet-btn.cancel{ background: var(--card-raised); color:var(--text); }
+</style>
+</head>
+<body>
+
+<div class="phone">
+  <div class="notch"></div>
+  <div class="topbar">
+    <div class="back">←</div>
+    <div class="title">Agent settings</div>
+  </div>
+
+  <div class="scroll">
+
+    <div class="eyebrow">What the agent has learned</div>
+    <div class="group">
+      <div class="row">
+        <div class="row-text">
+          <div class="t">Planning style <span class="inferred-tag">From you</span></div>
+          <div class="d">Used to time evening check-ins</div>
+        </div>
+        <div class="row-value">Night-before <span class="chev">›</span></div>
+      </div>
+      <div class="row">
+        <div class="row-text">
+          <div class="t">Peak focus times <span class="inferred-tag">Inferred</span></div>
+          <div class="d">Updated from your last 30 days of completions</div>
+        </div>
+        <div class="pill-wrap">
+          <div class="pill">Early AM</div>
+          <div class="pill">Mid AM</div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="row-text">
+          <div class="t">Tone preference <span class="inferred-tag">From you</span></div>
+          <div class="d">Shapes nudge and digest wording</div>
+        </div>
+        <div class="row-value">Direct <span class="chev">›</span></div>
+      </div>
+    </div>
+
+    <div class="note-card">
+      <div class="ic">✏️</div>
+      <p><b>Inferred</b> traits update automatically as you use Kindred. Tap any row to correct it — your correction always wins over what we observe.</p>
+    </div>
+    <div class="group" style="margin-top:10px;">
+      <div class="transparency-link">
+        <div class="t">See exactly what data this uses</div>
+        <div class="chev">›</div>
+      </div>
+    </div>
+
+    <div class="group-spacer"></div>
+    <div class="eyebrow">Nudges</div>
+    <div class="group">
+      <div class="row">
+        <div class="row-text">
+          <div class="t">Allow nudges</div>
+          <div class="d">Turn off to stop all check-ins</div>
+        </div>
+        <div class="switch on"><div class="knob"></div></div>
+      </div>
+      <div class="row">
+        <div class="row-text">
+          <div class="t">Frequency</div>
+          <div class="d">Light touch</div>
+        </div>
+        <div class="mini-track">
+          <div class="fill" style="width:28%"></div>
+          <div class="knob" style="left:28%"></div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="row-text">
+          <div class="t">Quiet hours</div>
+          <div class="d">No nudges sent during this window</div>
+        </div>
+        <div class="row-value">9pm–7am <span class="chev">›</span></div>
+      </div>
+      <div class="row">
+        <div class="row-text">
+          <div class="t">Auto-reduce when ignored</div>
+          <div class="d">Agent backs off if you dismiss nudges often</div>
+        </div>
+        <div class="switch on"><div class="knob"></div></div>
+      </div>
+      <div class="row" style="border-bottom:none;">
+        <div class="row-text">
+          <div class="t">Need a break?</div>
+          <div class="d">Pause nudges without turning off the agent</div>
+        </div>
+      </div>
+      <div class="pause-row">
+        <div class="pause-pill active">Today</div>
+        <div class="pause-pill">1 week</div>
+        <div class="pause-pill">Until I turn it back on</div>
+      </div>
+    </div>
+
+    <div class="group-spacer"></div>
+    <div class="eyebrow">Reports & briefings</div>
+    <div class="group">
+      <div class="row">
+        <div class="row-text">
+          <div class="t">Daily briefing</div>
+          <div class="d">A short recap each evening</div>
+        </div>
+        <div class="switch on"><div class="knob"></div></div>
+      </div>
+      <div class="row">
+        <div class="row-text">
+          <div class="t">Weekly trend summary</div>
+          <div class="d">Sent Sunday evenings</div>
+        </div>
+        <div class="switch on"><div class="knob"></div></div>
+      </div>
+      <div class="row">
+        <div class="row-text">
+          <div class="t">Show productivity score</div>
+          <div class="d">We show trends by default — turn this on for a single number instead</div>
+        </div>
+        <div class="switch"><div class="knob"></div></div>
+      </div>
+    </div>
+
+    <div class="group-spacer"></div>
+    <div class="eyebrow">Friends & sharing</div>
+    <div class="group">
+      <div class="row">
+        <div class="row-text">
+          <div class="t">Kudos suggestions</div>
+          <div class="d">Get prompted to celebrate friends' streaks</div>
+        </div>
+        <div class="switch on"><div class="knob"></div></div>
+      </div>
+      <div class="row">
+        <div class="row-text">
+          <div class="t">Share my progress with friends</div>
+          <div class="d">Off — your missed tasks and scores stay private</div>
+        </div>
+        <div class="switch"><div class="knob"></div></div>
+      </div>
+    </div>
+
+    <div class="group-spacer"></div>
+    <div class="eyebrow">Appearance</div>
+    <div class="group">
+      <div class="row theme-row">
+        <div class="row-text">
+          <div class="t">Theme</div>
+          <div class="d">Dark mode available for light sensitivity</div>
+        </div>
+        <div class="seg-toggle">
+          <div class="seg-btn active">Light</div>
+          <div class="seg-btn">Dark</div>
+          <div class="seg-btn">Auto</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="group-spacer"></div>
+    <div class="eyebrow">Data</div>
+    <div class="group">
+      <div class="row">
+        <div class="row-text">
+          <div class="t">Export my agent data</div>
+          <div class="d">Download everything the agent has stored, as a file</div>
+        </div>
+        <div class="chev">›</div>
+      </div>
+      <div class="row">
+        <div class="row-text">
+          <div class="t">Reset what the agent has learned</div>
+          <div class="d">Start over with onboarding preferences only</div>
+        </div>
+        <div class="chev">›</div>
+      </div>
+      <div class="danger-row" tabindex="0" onclick="openSheet('delete')">
+        <div>
+          <div class="t">Delete all agent data</div>
+          <div class="d">Permanently erases learned patterns and history</div>
+        </div>
+        <div class="chev" style="color:var(--coral-warn);">›</div>
+      </div>
+      <div class="danger-row" tabindex="0" onclick="openSheet('turnoff')">
+        <div>
+          <div class="t">Turn off Productivity Agent</div>
+          <div class="d">Keep tasks and rings, lose personalization</div>
+        </div>
+        <div class="chev" style="color:var(--coral-warn);">›</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Confirmation sheet: hidden by default, opened by the danger rows above -->
+  <div class="sheet-overlay" id="sheet-overlay" style="display:none;" onclick="closeSheetOnBackdrop(event)">
+    <div class="sheet">
+      <div class="sheet-handle"></div>
+      <div class="ic-big">⚠️</div>
+      <h3 id="sheet-title">Turn off Productivity Agent?</h3>
+      <p id="sheet-body">You'll stop receiving nudges, briefings, and trend reports. Your tasks and rings stay exactly as they are. <b>This won't delete anything</b> — you can turn the agent back on later and pick up where you left off.</p>
+      <div class="sheet-actions">
+        <div class="sheet-btn danger" id="sheet-confirm-btn" tabindex="0" onclick="closeSheet()">Turn off agent</div>
+        <div class="sheet-btn cancel" tabindex="0" onclick="closeSheet()">Cancel</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  var sheetContent = {
+    delete: {
+      title: 'Delete all agent data?',
+      body: "This permanently erases everything the agent has learned — your patterns, nudge history, and trend data. <b>This cannot be undone.</b> Your tasks and rings themselves are not affected.",
+      confirmLabel: 'Delete everything'
+    },
+    turnoff: {
+      title: 'Turn off Productivity Agent?',
+      body: "You'll stop receiving nudges, briefings, and trend reports. Your tasks and rings stay exactly as they are. <b>This won't delete anything</b> — you can turn the agent back on later and pick up where you left off.",
+      confirmLabel: 'Turn off agent'
+    }
+  };
+  function openSheet(kind){
+    var c = sheetContent[kind];
+    document.getElementById('sheet-title').textContent = c.title;
+    document.getElementById('sheet-body').innerHTML = c.body;
+    document.getElementById('sheet-confirm-btn').textContent = c.confirmLabel;
+    document.getElementById('sheet-overlay').style.display = 'flex';
+  }
+  function closeSheet(){
+    document.getElementById('sheet-overlay').style.display = 'none';
+  }
+  function closeSheetOnBackdrop(e){
+    if(e.target.id === 'sheet-overlay') closeSheet();
+  }
+  document.querySelectorAll('[tabindex="0"]').forEach(function(el){
+    if(!el.hasAttribute('role')) el.setAttribute('role','button');
+    el.addEventListener('keydown', function(e){
+      if(e.key === 'Enter' || e.key === ' '){
+        e.preventDefault();
+        el.click();
+      }
+    });
+  });
+</script>
+
+</body>
+</html>
