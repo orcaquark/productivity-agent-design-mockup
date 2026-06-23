@@ -154,10 +154,30 @@
 
   .chip-row{ display:flex; gap:8px; flex-wrap:wrap; }
   .chip{
-    font-size:11.5px; padding:8px 12px; min-height:32px; display:flex; align-items:center;
+    font-size:11.5px; padding:8px 12px; min-height:32px; display:flex; align-items:center; gap:5px;
     border-radius:20px; background: var(--card-raised); color:var(--text-muted); border:1px solid #e3ddf0;
   }
   .chip.active{ background: var(--violet-soft); color: var(--violet); border-color: transparent; }
+  /* task chip: a still-open ring, distinct from an "insight" chip — has an icon,
+     an actionable affordance (chevron), and an onclick instead of being purely informational */
+  .chip.task{
+    background:#fff; color:var(--text); border:1px solid var(--sage); cursor:pointer;
+  }
+  .chip.task .dot{
+    width:7px; height:7px; border-radius:50%; background:var(--sage); flex-shrink:0;
+  }
+  .chip.task .go{ color:var(--sage); font-weight:700; margin-left:2px; }
+  .chip.done{ background:var(--sage-dim); color:var(--sage); border-color:transparent; cursor:default; }
+  .chip.done .dot.done{ background:var(--sage); }
+  .chip-caption{ font-size:10px; color:var(--text-faint); margin-top:8px; line-height:1.4; }
+
+  .kudos-feedback{
+    display:none; align-items:center; gap:8px; margin-top:12px;
+    font-size:12.5px; color:var(--sage); font-weight:600;
+  }
+  .kudos-feedback.show{ display:flex; }
+  .kudos-feedback .undo{ color:var(--violet); font-weight:600; font-size:11.5px; background:none; border:none; font-family:inherit; min-height:32px; }
+  .kudos-card.resolved .kudos-row, .kudos-card.resolved .kudos-actions{ display:none; }
 
   .nudge-copy .title{ font-size:14.5px; font-weight:600; color:var(--text); margin-bottom:4px; max-width:280px; }
   .nudge-copy .desc{ font-size:12.5px; color:var(--text-muted); line-height:1.5; }
@@ -261,9 +281,12 @@
               You closed <b>4 of 6</b> rings today. Your focus held strongest before noon — that's the third day this week your completions cluster before 1pm.
             </div>
             <div class="chip-row">
-              <div class="chip active" tabindex="0">Mornings work for you</div>
-              <div class="chip" tabindex="0">Gym ring open</div>
+              <div class="chip active" tabindex="0">✦ Mornings work for you</div>
+              <div class="chip task" id="gym-chip" tabindex="0" onclick="openRing('Gym')" role="button">
+                <span class="dot"></span>Gym ring open<span class="go">→</span>
+              </div>
             </div>
+            <div class="chip-caption">Purple = a pattern we noticed about you · Green = an open ring you can still close today</div>
           </div>
         </div>
 
@@ -328,16 +351,17 @@
 
         <div class="node-card">
           <div class="node-dot sage">♥</div>
-          <div class="card">
+          <div class="card kudos-card" id="kudos-card">
             <div class="card-label">Worth celebrating</div>
             <div class="kudos-row">
               <div class="avatar">J</div>
               <div class="kudos-text"><b>Jordan</b> completed Morning Run every day this week.</div>
             </div>
-            <div class="kudos-actions">
-              <div class="kudos-btn send" tabindex="0">Send kudos</div>
-              <div class="kudos-btn skip" tabindex="0">Skip</div>
+            <div class="kudos-actions" id="kudos-actions">
+              <div class="kudos-btn send" tabindex="0" onclick="resolveKudos('sent')">Send kudos</div>
+              <div class="kudos-btn skip" tabindex="0" onclick="resolveKudos('skipped')">Skip</div>
             </div>
+            <div class="kudos-feedback" id="kudos-feedback"></div>
           </div>
         </div>
 
@@ -455,6 +479,31 @@
     var fb = document.getElementById('nudge-feedback');
     fb.classList.remove('show');
     fb.innerHTML = '';
+  }
+  function resolveKudos(kind){
+    document.getElementById('kudos-actions').style.display = 'none';
+    var fb = document.getElementById('kudos-feedback');
+    fb.classList.add('show');
+    if(kind === 'sent'){
+      fb.innerHTML = '<span>✓ Kudos sent to Jordan</span><button class="undo" onclick="undoKudos()">Undo</button>';
+    } else {
+      fb.innerHTML = '<span style="color:var(--text-muted)">Skipped — we\'ll surface this less often</span><button class="undo" onclick="undoKudos()">Undo</button>';
+    }
+  }
+  function undoKudos(){
+    document.getElementById('kudos-actions').style.display = 'flex';
+    var fb = document.getElementById('kudos-feedback');
+    fb.classList.remove('show');
+    fb.innerHTML = '';
+  }
+  function openRing(name){
+    var chip = document.getElementById('gym-chip');
+    chip.classList.remove('task');
+    chip.classList.add('done');
+    chip.innerHTML = '<span class="dot done"></span>' + name + ' ring closed ✓';
+    chip.onclick = null;
+    chip.removeAttribute('role');
+    chip.removeAttribute('tabindex');
   }
   // keyboard support for div-as-button interactive elements
   document.querySelectorAll('[tabindex="0"]').forEach(function(el){
