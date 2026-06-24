@@ -658,7 +658,7 @@
     window._exportTimer = setTimeout(function(){ note.classList.remove('show'); }, 4000);
   }
 
-  // ---------- status banner (paused / turned off) ----------
+  // ---------- status banner (paused / turned off / deleted) ----------
   function showBanner(kind, detail){
     var banner = document.getElementById('status-banner');
     var text = document.getElementById('sb-text');
@@ -678,6 +678,12 @@
       action.textContent = 'Turn back on';
       action.onclick = resumeAgent;
       dependent.classList.add('agent-disabled');
+    } else if(kind === 'deleted'){
+      banner.classList.add('turnedOff');
+      text.innerHTML = '<b>Agent data deleted.</b> Your patterns and history are gone — the agent starts learning again from scratch. Tasks and rings are unaffected.';
+      action.textContent = 'Dismiss';
+      action.onclick = resumeAgent;
+      dependent.classList.remove('agent-disabled');
     }
     banner.classList.add('show');
   }
@@ -711,7 +717,7 @@
       title: 'Delete all agent data?',
       body: "This permanently erases everything the agent has learned — your patterns, nudge history, and trend data. <b>This cannot be undone.</b> Your tasks and rings themselves are not affected.",
       actions: [
-        { label: 'Delete everything', style: 'danger', onClick: function(){ resetLearnedValues(); showBanner('turnedOff'); } }
+        { label: 'Delete everything', style: 'danger', onClick: function(){ resetLearnedValues(); showBanner('deleted'); } }
       ]
     },
     reset: {
