@@ -7,9 +7,6 @@
   @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
   :root{
-    --bg: #14131a; /* unused, kept for ref */
-  }
-  :root{
     --bg: #faf9fc;
     --card: #ffffff;
     --card-raised: #f1eef8;
@@ -41,11 +38,17 @@
   }
   .notch{ position:absolute; top:14px; left:50%; transform:translateX(-50%); width:110px; height:24px; background:#2a2632; border-radius:20px; z-index:10; }
 
+  /* Only one step-page is shown at a time; the rest stay mounted but hidden
+     so their state (slider position, chip selections, etc.) isn't lost when navigating. */
+  .step-page{ display:none; flex-direction:column; height:100%; }
+  .step-page.active{ display:flex; }
+
   .topbar{ padding:60px 22px 14px; display:flex; align-items:center; gap:12px; }
   .back{
     width:34px; height:34px; min-width:34px; border-radius:9px; background: var(--card-raised);
-    display:flex; align-items:center; justify-content:center; color:var(--text-muted); font-size:15px; border:none;
+    display:flex; align-items:center; justify-content:center; color:var(--text-muted); font-size:15px; border:none; cursor:pointer;
   }
+  .back[disabled]{ opacity:0.35; cursor:default; }
   .progress{ flex:1; display:flex; gap:5px; }
   .progress .seg{ flex:1; height:3px; border-radius:2px; background:#e3ddf0; }
   .progress .seg.filled{ background: var(--violet); }
@@ -63,7 +66,7 @@
 
   .option{
     display:flex; align-items:flex-start; gap:12px; padding:15px 14px; min-height:56px;
-    border-radius:14px; background: var(--card); border:1px solid #e3ddf0; margin-bottom:10px;
+    border-radius:14px; background: var(--card); border:1px solid #e3ddf0; margin-bottom:10px; cursor:pointer;
   }
   .option.selected{ border-color: var(--violet); background: var(--violet-soft); }
   .opt-icon{ width:34px; height:34px; border-radius:10px; background: var(--card-raised); display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0; }
@@ -94,7 +97,7 @@
   .drag-hint{ font-size:10px; color:var(--text-faint); font-style:italic; }
 
   .time-grid{ display:flex; flex-wrap:wrap; gap:8px; }
-  .time-chip{ padding:10px 14px; min-height:40px; display:flex; align-items:center; border-radius:12px; background: var(--card); border:1px solid #e3ddf0; font-size:12.5px; color:var(--text-muted); }
+  .time-chip{ padding:10px 14px; min-height:40px; display:flex; align-items:center; border-radius:12px; background: var(--card); border:1px solid #e3ddf0; font-size:12.5px; color:var(--text-muted); cursor:pointer; }
   .time-chip.selected{ background: var(--violet-soft); border-color: var(--violet); color: var(--violet); font-weight:600; }
 
   .summary-card{ background: var(--card); border:1px solid #e3ddf0; border-radius:18px; padding:18px; margin-bottom:12px; }
@@ -103,7 +106,7 @@
   .summary-row:first-child{ padding-top:0; }
   .summary-k{ font-size:11.5px; color:var(--text-faint); font-family:'JetBrains Mono', monospace; padding-top:2px; }
   .summary-v{ font-size:13px; color:var(--text); font-weight:500; text-align:right; max-width:200px; }
-  .edit-link{ font-size:11px; color:var(--violet); margin-top:3px; background:none; border:none; font-family:inherit; min-height:28px; }
+  .edit-link{ font-size:11px; color:var(--violet); margin-top:3px; background:none; border:none; font-family:inherit; min-height:28px; cursor:pointer; }
 
   .privacy-note{ display:flex; gap:10px; background: var(--violet-soft); border:1px solid var(--violet-dim); border-radius:14px; padding:13px 14px; margin-bottom:14px; }
   .privacy-note .ic{ font-size:15px; flex-shrink:0; }
@@ -117,26 +120,27 @@
   .save-note{ display:flex; align-items:center; gap:6px; font-size:11px; color:var(--text-faint); margin-bottom:10px; justify-content:center; }
 
   .footer{ padding:14px 22px 28px; background:#ffffff; border-top:1px solid #e3ddf0; }
-  .cta{ width:100%; padding:15px 0; min-height:50px; border-radius:14px; background: var(--violet); color:#fff; text-align:center; font-size:14.5px; font-weight:700; margin-bottom:8px; border:none; display:flex; align-items:center; justify-content:center; font-family:inherit; }
+  .cta{ width:100%; padding:15px 0; min-height:50px; border-radius:14px; background: var(--violet); color:#fff; text-align:center; font-size:14.5px; font-weight:700; margin-bottom:8px; border:none; display:flex; align-items:center; justify-content:center; font-family:inherit; cursor:pointer; }
   .cta.outline{ background:transparent; border:1px solid #d8d2e8; color:var(--text-muted); font-weight:600; }
-  .skip{ text-align:center; font-size:12px; color:var(--text-faint); min-height:28px; display:flex; align-items:center; justify-content:center; background:none; border:none; width:100%; font-family:inherit; }
+  .cta[disabled]{ opacity:0.6; cursor:default; }
+  .skip{ text-align:center; font-size:12px; color:var(--text-faint); min-height:28px; display:flex; align-items:center; justify-content:center; background:none; border:none; width:100%; font-family:inherit; cursor:pointer; }
 
-  .label-row{ display:flex; justify-content:center; gap:10px; margin-top:18px; flex-wrap:wrap; }
-  .page-dot{ font-size:11px; color:#8a84a0; font-family:'Inter'; }
+  .label-row{ display:flex; justify-content:center; gap:14px; margin-top:18px; flex-wrap:wrap; }
+  .page-dot{ font-size:11px; color:#8a84a0; font-family:'Inter'; transition:color .15s, font-weight .15s; }
+  .page-dot.active{ color:var(--violet); font-weight:600; }
   .wrap-outer{ display:flex; flex-direction:column; align-items:center; gap:16px; }
-  .deck{ display:flex; gap:24px; flex-wrap:wrap; justify-content:center; }
 </style>
 </head>
 <body>
 
 <div class="wrap-outer">
-<div class="deck">
+<div class="phone">
+  <div class="notch"></div>
 
-  <!-- SCREEN 1: How do you plan -->
-  <div class="phone">
-    <div class="notch"></div>
+  <!-- STEP 1: How do you plan -->
+  <div class="step-page active" data-step="1">
     <div class="topbar">
-      <button class="back" aria-label="Go back">←</button>
+      <button class="back" aria-label="Go back" disabled></button>
       <div class="progress"><div class="seg filled"></div><div class="seg"></div><div class="seg"></div><div class="seg"></div></div>
       <div class="time-est">~1 MIN</div>
     </div>
@@ -145,38 +149,37 @@
       <div class="step-title">How do you usually plan your day?</div>
       <div class="step-sub">This shapes how your agent times suggestions. There's no right answer, and you can change it later.</div>
 
-      <div class="option selected" tabindex="0" data-group="plan" onclick="selectOption(this)">
+      <div class="option selected" tabindex="0" data-group="plan" data-summary="Night-before planner" onclick="selectOption(this)">
         <div class="opt-icon">🗓️</div>
         <div class="opt-text"><div class="t">I plan the night before</div><div class="d">Set tomorrow up before bed</div></div>
         <div class="opt-check">✓</div>
       </div>
-      <div class="option" tabindex="0" data-group="plan" onclick="selectOption(this)">
+      <div class="option" tabindex="0" data-group="plan" data-summary="Morning-of planner" onclick="selectOption(this)">
         <div class="opt-icon">☕</div>
         <div class="opt-text"><div class="t">I plan first thing in the morning</div><div class="d">Figure it out over coffee</div></div>
         <div class="opt-check"></div>
       </div>
-      <div class="option" tabindex="0" data-group="plan" onclick="selectOption(this)">
+      <div class="option" tabindex="0" data-group="plan" data-summary="No real plan" onclick="selectOption(this)">
         <div class="opt-icon">🌊</div>
         <div class="opt-text"><div class="t">I don't really plan — I go with it</div><div class="d">Tasks get done as they come up</div></div>
         <div class="opt-check"></div>
       </div>
-      <div class="option" tabindex="0" data-group="plan" onclick="selectOption(this)">
+      <div class="option" tabindex="0" data-group="plan" data-summary="Varies week to week" onclick="selectOption(this)">
         <div class="opt-icon">🔁</div>
         <div class="opt-text"><div class="t">It changes week to week</div><div class="d">Depends on what's going on</div></div>
         <div class="opt-check"></div>
       </div>
     </div>
     <div class="footer">
-      <div class="cta" tabindex="0">Continue</div>
-      <button class="skip">Skip for now — you can set this up later</button>
+      <div class="cta" tabindex="0" onclick="goToStep(2)">Continue</div>
+      <button class="skip" onclick="goToStep(2)">Skip for now — you can set this up later</button>
     </div>
   </div>
 
-  <!-- SCREEN 2: nudge intensity -->
-  <div class="phone">
-    <div class="notch"></div>
+  <!-- STEP 2: nudge intensity -->
+  <div class="step-page" data-step="2">
     <div class="topbar">
-      <button class="back" aria-label="Go back">←</button>
+      <button class="back" aria-label="Go back" onclick="goToStep(1)">←</button>
       <div class="progress"><div class="seg filled"></div><div class="seg filled"></div><div class="seg"></div><div class="seg"></div></div>
       <div class="time-est">~1 MIN</div>
     </div>
@@ -211,16 +214,15 @@
       </div>
     </div>
     <div class="footer">
-      <div class="cta" tabindex="0">Continue</div>
-      <button class="skip">Skip for now — you can set this up later</button>
+      <div class="cta" tabindex="0" onclick="goToStep(3)">Continue</div>
+      <button class="skip" onclick="goToStep(3)">Skip for now — you can set this up later</button>
     </div>
   </div>
 
-  <!-- SCREEN 3: peak focus time -->
-  <div class="phone">
-    <div class="notch"></div>
+  <!-- STEP 3: peak focus time -->
+  <div class="step-page" data-step="3">
     <div class="topbar">
-      <button class="back" aria-label="Go back">←</button>
+      <button class="back" aria-label="Go back" onclick="goToStep(2)">←</button>
       <div class="progress"><div class="seg filled"></div><div class="seg filled"></div><div class="seg filled"></div><div class="seg"></div></div>
       <div class="time-est">~1 MIN</div>
     </div>
@@ -244,16 +246,15 @@
       </div>
     </div>
     <div class="footer">
-      <div class="cta" tabindex="0">Continue</div>
-      <button class="skip">Skip for now — you can set this up later</button>
+      <div class="cta" tabindex="0" onclick="goToStep(4)">Continue</div>
+      <button class="skip" onclick="goToStep(4)">Skip for now — you can set this up later</button>
     </div>
   </div>
 
-  <!-- SCREEN 4: summary / confirm -->
-  <div class="phone">
-    <div class="notch"></div>
+  <!-- STEP 4: summary / confirm -->
+  <div class="step-page" data-step="4">
     <div class="topbar">
-      <button class="back" aria-label="Go back">←</button>
+      <button class="back" aria-label="Go back" onclick="goToStep(3)">←</button>
       <div class="progress"><div class="seg filled"></div><div class="seg filled"></div><div class="seg filled"></div><div class="seg filled"></div></div>
       <div class="time-est">DONE</div>
     </div>
@@ -263,16 +264,15 @@
       <div class="step-sub">Here's what we'll use to start. Nothing here is permanent.</div>
 
       <div class="summary-card">
-        <div class="summary-row"><div class="summary-k">PLANNING STYLE</div><div class="summary-v">Night-before planner<br><button class="edit-link">Edit</button></div></div>
-        <div class="summary-row"><div class="summary-k">NUDGE FREQUENCY</div><div class="summary-v">Light touch<br><button class="edit-link">Edit</button></div></div>
-        <div class="summary-row"><div class="summary-k">TONE</div><div class="summary-v">Direct, matter-of-fact<br><button class="edit-link">Edit</button></div></div>
-        <div class="summary-row"><div class="summary-k">PEAK FOCUS</div><div class="summary-v">Early & mid-morning<br><button class="edit-link">Edit</button></div></div>
+        <div class="summary-row"><div class="summary-k">PLANNING STYLE</div><div class="summary-v"><span id="summary-plan">Night-before planner</span><br><button class="edit-link" onclick="goToStep(1)">Edit</button></div></div>
+        <div class="summary-row"><div class="summary-k">NUDGE FREQUENCY</div><div class="summary-v"><span id="summary-freq">Light touch</span><br><button class="edit-link" onclick="goToStep(2)">Edit</button></div></div>
+        <div class="summary-row"><div class="summary-k">TONE</div><div class="summary-v"><span id="summary-tone">Direct, matter-of-fact</span><br><button class="edit-link" onclick="goToStep(2)">Edit</button></div></div>
+        <div class="summary-row"><div class="summary-k">PEAK FOCUS</div><div class="summary-v"><span id="summary-focus">Early & mid-morning</span><br><button class="edit-link" onclick="goToStep(3)">Edit</button></div></div>
       </div>
 
       <div class="privacy-note">
         <div class="ic">🔒</div>
         <p>Visible only to you — none of this is shown to friends unless you choose to share it.</p>
-        <span></span>
       </div>
       <button class="learn-more" id="learn-more-link" tabindex="0" onclick="toggleLearnMore()">Learn more about how this data is used →</button>
       <div class="learn-more-panel" id="learn-more-panel">
@@ -281,21 +281,43 @@
     </div>
     <div class="footer">
       <div class="save-note">✓ Your answers save automatically as you go</div>
-      <div class="cta" tabindex="0">Start using my agent</div>
+      <div class="cta" tabindex="0" id="finish-btn" onclick="finishOnboarding()">Start using my agent</div>
     </div>
   </div>
 
 </div>
 
 <div class="label-row">
-  <div class="page-dot">1 · Planning style</div>
-  <div class="page-dot">2 · Nudge tuning</div>
-  <div class="page-dot">3 · Focus times</div>
-  <div class="page-dot">4 · Confirm</div>
+  <div class="page-dot active" data-dot="1">1 · Planning style</div>
+  <div class="page-dot" data-dot="2">2 · Nudge tuning</div>
+  <div class="page-dot" data-dot="3">3 · Focus times</div>
+  <div class="page-dot" data-dot="4">4 · Confirm</div>
 </div>
 </div>
 
 <script>
+  var currentStep = 1;
+
+  function goToStep(n){
+    if(n < 1 || n > 4) return;
+    document.querySelectorAll('.step-page').forEach(function(p){ p.classList.remove('active'); });
+    document.querySelector('.step-page[data-step="' + n + '"]').classList.add('active');
+    document.querySelectorAll('.page-dot').forEach(function(d){
+      d.classList.toggle('active', d.getAttribute('data-dot') === String(n));
+    });
+    currentStep = n;
+    if(n === 4) updateSummary();
+    // keep the new step's own scroll area at the top
+    var screen = document.querySelector('.step-page[data-step="' + n + '"] .screen');
+    if(screen) screen.scrollTop = 0;
+  }
+
+  function finishOnboarding(){
+    var btn = document.getElementById('finish-btn');
+    btn.textContent = '✓ All set!';
+    btn.setAttribute('disabled', 'true');
+  }
+
   function selectOption(el){
     var group = el.getAttribute('data-group');
     document.querySelectorAll('[data-group="'+group+'"]').forEach(function(o){
@@ -309,7 +331,12 @@
     el.classList.toggle('selected');
   }
 
-  function setupSlider(trackId, fillId, knobId, labelId, labels){
+  var sliderDisplay = {
+    freq: { idx: 0, labels: ['Light touch', 'Some check-ins', 'Frequent'] },
+    tone: { idx: 1, labels: ['Quiet', 'Direct, matter-of-fact', 'Cheerful'] }
+  };
+
+  function setupSlider(trackId, fillId, knobId, labelId, labels, stateKey){
     var track = document.getElementById(trackId);
     var fill = document.getElementById(fillId);
     var knob = document.getElementById(knobId);
@@ -329,6 +356,7 @@
       knob.setAttribute('aria-valuenow', pct);
       var idx = pct < 34 ? 0 : (pct < 67 ? 1 : 2);
       label.textContent = labels[idx];
+      sliderDisplay[stateKey].idx = idx;
     }
     function start(e){ dragging = true; update(pctFromEvent(e)); e.preventDefault(); }
     function move(e){ if(dragging){ update(pctFromEvent(e)); e.preventDefault(); } }
@@ -347,8 +375,21 @@
       if(e.key === 'ArrowLeft' || e.key === 'ArrowDown'){ update(Math.max(0, current - 5)); e.preventDefault(); }
     });
   }
-  setupSlider('freq-track', 'freq-fill', 'freq-knob', 'freq-label', ['LIGHT TOUCH', 'SOME CHECK-INS', 'FREQUENT']);
-  setupSlider('tone-track', 'tone-fill', 'tone-knob', 'tone-label', ['QUIET', 'DIRECT, MATTER-OF-FACT', 'CHEERFUL']);
+  setupSlider('freq-track', 'freq-fill', 'freq-knob', 'freq-label', ['LIGHT TOUCH', 'SOME CHECK-INS', 'FREQUENT'], 'freq');
+  setupSlider('tone-track', 'tone-fill', 'tone-knob', 'tone-label', ['QUIET', 'DIRECT, MATTER-OF-FACT', 'CHEERFUL'], 'tone');
+
+  function updateSummary(){
+    var planEl = document.querySelector('.option.selected[data-group="plan"]');
+    document.getElementById('summary-plan').textContent = planEl ? planEl.getAttribute('data-summary') : 'Not set yet';
+
+    document.getElementById('summary-freq').textContent = sliderDisplay.freq.labels[sliderDisplay.freq.idx];
+    document.getElementById('summary-tone').textContent = sliderDisplay.tone.labels[sliderDisplay.tone.idx];
+
+    var times = Array.from(document.querySelectorAll('.time-chip.selected')).map(function(c){ return c.textContent; });
+    document.getElementById('summary-focus').textContent = times.length
+      ? times.join(', ')
+      : 'No pattern yet — we\'ll use your activity instead';
+  }
 
   function toggleLearnMore(){
     var panel = document.getElementById('learn-more-panel');
