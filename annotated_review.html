@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Kindred — Productivity Agent · Annotated Review v2</title>
+<title>Kindred — Productivity Agent · Design Review</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
@@ -14,8 +14,6 @@
     --violet-soft: #854dff14;
     --card: #ffffff;
     --line: #d8d2e8;
-    --sage: #4f8a4b;
-    --sage-soft: #93c08f22;
     --coral: #c2532f;
     --coral-soft: #d9714e16;
   }
@@ -26,7 +24,7 @@
     color: var(--ink);
     padding: 48px 24px 90px;
   }
-  .header{ max-width:1180px; margin:0 auto 16px; }
+  .header{ max-width:1180px; margin:0 auto 40px; }
   .eyebrow{
     font-family:'JetBrains Mono', monospace;
     font-size:11px; letter-spacing:0.12em; text-transform:uppercase;
@@ -34,16 +32,6 @@
   }
   h1{ font-family:'Fraunces', serif; font-weight:500; font-size:34px; margin-bottom:10px; }
   .header p{ color:var(--muted); font-size:14px; max-width:680px; line-height:1.6; }
-
-  .changelog{
-    max-width:1180px; margin:0 auto 44px;
-    background: var(--card); border:1px solid var(--line); border-radius:16px;
-    padding:18px 20px;
-  }
-  .changelog h2{ font-family:'Fraunces', serif; font-weight:500; font-size:15px; margin-bottom:10px; }
-  .changelog ul{ list-style:none; display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px 24px; }
-  .changelog li{ font-size:12px; color:var(--muted); line-height:1.5; padding-left:14px; position:relative; }
-  .changelog li::before{ content:"—"; position:absolute; left:0; color:var(--violet); }
 
   .board{ max-width:1180px; margin:0 auto; display:flex; flex-direction:column; gap:64px; }
   .section{ display:flex; gap:36px; align-items:flex-start; flex-wrap:wrap; }
@@ -77,9 +65,7 @@
     display:inline-block; font-size:8.5px; font-family:'JetBrains Mono', monospace; text-transform:uppercase;
     padding:1px 6px; border-radius:5px; margin-left:6px; vertical-align:1px; font-weight:600;
   }
-  .tag.fixed{ background:var(--sage-soft); color:var(--sage); }
-  .tag.flag{ background:var(--coral-soft); color:var(--coral); }
-  .tag.original{ background:#e3ddf0; color:var(--violet); }
+  .tag.open{ background:var(--coral-soft); color:var(--coral); }
 
   .legend{ max-width:1180px; margin:60px auto 0; border-top:1px solid var(--line); padding-top:28px; }
   .legend h2{ font-family:'Fraunces', serif; font-weight:500; font-size:18px; margin-bottom:6px; }
@@ -104,30 +90,9 @@
 <body>
 
 <div class="header">
-  <div class="eyebrow">Productivity Agent · Design Review v2</div>
-  <h1>Stress-testing the design against real failure modes</h1>
-  <p>Same three screens as before, hardened against accessibility gaps, trust gaps, irreversible mistakes, edge cases, and privacy leaks we hadn't addressed yet. Each section opens with the <b>original design rationale</b> (tagged R1, R2…) from the first review, followed by what changed in this pass — tagged <span class="tag fixed">FIXED</span> for something now visible in the mockup, or <span class="tag flag">FLAGGED</span> for something worth spec'ing separately before build (see the deferred list at the bottom).</p>
-</div>
-
-<div class="changelog">
-  <h2>What changed since v1</h2>
-  <ul>
-    <li>Contrast: violet text darkened to pass AA against light backgrounds; buttons keep full-saturation violet</li>
-    <li>Touch targets: every tappable element is now ≥40–50px tall, not just visually sized</li>
-    <li>Focus-visible outline added for keyboard/switch-control navigation</li>
-    <li>Node markers use shape + glyph, not color alone, for colorblind users</li>
-    <li>Home screen now has a working New user / cold-start state, toggleable for review</li>
-    <li>"Why am I seeing this" expands inline instead of linking nowhere</li>
-    <li>Nudge actions are undoable for a short window after tapping</li>
-    <li>Nudge card shows queue position ("1 of 2 today") so users know more exist</li>
-    <li>Onboarding shows time estimate per step and explicit "you can change this later"</li>
-    <li>Onboarding has a learn-more link and autosave confirmation at the end</li>
-    <li>Settings: "Need a break?" pause option sits below full opt-out, as a lower-commitment alternative</li>
-    <li>Settings: Export, Reset, Delete, and Turn off are four distinct, clearly differentiated actions</li>
-    <li>Destructive actions require a confirmation sheet stating exactly what is and isn't lost</li>
-    <li>Theme control added (light / dark / auto) for light sensitivity</li>
-    <li>"See exactly what data this uses" link added next to inferred traits</li>
-  </ul>
+  <div class="eyebrow">Productivity Agent · Design Review</div>
+  <h1>Why each screen works the way it does</h1>
+  <p>A walkthrough of the three Productivity Agent screens, organized by the reasoning behind each decision rather than by build history. Items tagged <span class="tag open">OPEN</span> are known gaps worth a ticket before this goes further — everything else reflects something already present in the screen next to it.</p>
 </div>
 
 <div class="board">
@@ -136,99 +101,82 @@
   <div class="section">
     <div class="frame-col">
       <div class="section-title">1. Agent home</div>
-      <div class="section-sub">Now with a state switcher — try toggling "New user" inside the frame</div>
+      <div class="section-sub">Try the New user toggle, the nudge card, and the kudos card</div>
       <div class="frame"><iframe src="productivity_agent_mockup.html" scrolling="no"></iframe></div>
     </div>
     <div class="notes">
 
-      <div class="cat-label">Original design rationale</div>
+      <div class="cat-label">Tone & framing</div>
       <div class="note">
-        <div class="num">R1</div>
+        <div class="num">1</div>
         <div class="note-text"><div class="t">Thread motif, not a feed</div>
         <div class="d">Cards are connected by a visible line rather than stacked as a generic feed — signals these are one continuous read on the user's day, not unrelated notifications competing for attention.</div></div>
       </div>
       <div class="note">
-        <div class="num">R2</div>
+        <div class="num">2</div>
         <div class="note-text"><div class="t">Briefing leads with pattern, not score</div>
         <div class="d">"4 of 6 rings" and "third day this week" describe behavior in context. No grade, no implied judgment.</div></div>
       </div>
       <div class="note">
-        <div class="num">R3</div>
-        <div class="note-text"><div class="t">"Why am I seeing this" on every nudge</div>
-        <div class="d">A transparency link is always present, not buried in settings — gives the user a way to sanity-check the agent's reasoning in the moment.</div></div>
-      </div>
-      <div class="note">
-        <div class="num">R4</div>
-        <div class="note-text"><div class="t">"Not now" is equal weight to "Move it"</div>
-        <div class="d">Dismissal isn't a smaller, greyed-out afterthought — declining a nudge is a first-class action, not friction to push through.</div></div>
-      </div>
-      <div class="note">
-        <div class="num">R5</div>
+        <div class="num">3</div>
         <div class="note-text"><div class="t">Trend card explicitly avoids a single number</div>
         <div class="d">States "no single score here" directly in-product, and gives the Tuesday dip context (offsite) rather than leaving it to read as a failure.</div></div>
       </div>
       <div class="note">
-        <div class="num">R6</div>
+        <div class="num">4</div>
         <div class="note-text"><div class="t">Missed-task reasons are descriptive, not judgmental</div>
         <div class="d">"Pushed 3 times," "no time block set" — observations about the task, never framed as something wrong with the person.</div></div>
       </div>
+
+      <div class="cat-label">Transparency & reversibility</div>
       <div class="note">
-        <div class="num">R7</div>
-        <div class="note-text"><div class="t">Kudos is a single, skippable suggestion</div>
-        <div class="d">One friend, one moment, with a real "Skip" — not a leaderboard or a pressure-based ask to perform social encouragement.</div></div>
+        <div class="num">5</div>
+        <div class="note-text"><div class="t">"Why am I seeing this" expands inline</div>
+        <div class="d">Tapping it shows the actual reasoning ("based on 14 days...") right there, rather than being a transparency gesture with nowhere to go.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">6</div>
+        <div class="note-text"><div class="t">"Not now" carries equal weight to "Move it," and both are undoable</div>
+        <div class="d">Dismissal is a first-class action, not a smaller afterthought — and a mis-tap on either button isn't permanent. Both confirm what happened and offer Undo for a few seconds.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">7</div>
+        <div class="note-text"><div class="t">Kudos works the same way: Send or Skip, either reversible</div>
+        <div class="d">One friend, one moment — a real "Skip," not a leaderboard, and Undo on both actions so a fast tap doesn't lock in a choice you didn't mean to make.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">8</div>
+        <div class="note-text"><div class="t">Nudge card shows its place in a queue ("1 of 2 today")</div>
+        <div class="d">Sets honest expectations that more exist, rather than the home screen silently picking one and hiding the rest.</div></div>
       </div>
 
-      <div class="cat-label">Accessibility</div>
+      <div class="cat-label">Accessibility & clarity</div>
       <div class="note">
-        <div class="num">01</div>
-        <div class="note-text"><div class="t">Color was never the only signal<span class="tag fixed">FIXED</span></div>
-        <div class="d">Each node marker pairs its color with a distinct shape and glyph (✦ briefing, ! nudge, ~ trend, · missed, ♥ kudos) so colorblind users aren't relying on hue to tell cards apart.</div></div>
+        <div class="num">9</div>
+        <div class="note-text"><div class="t">Color is never the only signal</div>
+        <div class="d">Each node marker pairs its color with a distinct shape and glyph (✦ briefing, ! nudge, ~ trend, · missed, ♥ kudos), and text uses a darker violet that clears AA contrast against light backgrounds.</div></div>
       </div>
       <div class="note">
-        <div class="num">02</div>
-        <div class="note-text"><div class="t">Text contrast against light backgrounds<span class="tag fixed">FIXED</span></div>
-        <div class="d">The original light-violet was too close to white (~3.5:1). Body and link text now use a darker violet that clears AA at small sizes; buttons keep the bright violet since it's a solid fill with white text.</div></div>
+        <div class="num">10</div>
+        <div class="note-text"><div class="t">An "insight" chip and an "open task" chip used to look identical</div>
+        <div class="d">"Mornings work for you" (an observation) and "Gym ring open" (an action) now have distinct styling — the ring chip has its own color, icon, and a real tap target — plus a caption spelling out the difference. <b>Note:</b> tapping it closes the ring directly here, which is a mockup shortcut so the interaction is demonstrable — in the real app this should navigate to the Rings tab scoped to that ring, not resolve it in place from a chip.</div></div>
       </div>
       <div class="note">
-        <div class="num">03</div>
-        <div class="note-text"><div class="t">Tap targets sized for thumbs, not just eyes<span class="tag fixed">FIXED</span></div>
-        <div class="d">Chips, buttons, and links all carry a minimum touch height even where the visible label is small — a one-line CSS afterthought that's easy to miss until someone tests on an actual phone.</div></div>
-      </div>
-
-      <div class="cat-label">Edge cases & cold start</div>
-      <div class="note">
-        <div class="num">04</div>
-        <div class="note-text"><div class="t">Day-one users have nothing to show<span class="tag fixed">FIXED</span></div>
-        <div class="d">A populated screen on day one would either be empty and confusing, or worse, fabricated. The New user state explains why each card is blank and what unlocks it, instead of pretending there's a pattern yet.</div></div>
-      </div>
-      <div class="note">
-        <div class="num">05</div>
-        <div class="note-text"><div class="t">What if there are several nudges, not one?<span class="tag fixed">FIXED</span></div>
-        <div class="d">"1 of 2 today" sets honest expectations that more exist, rather than the home screen silently picking one and hiding the rest of the queue from the user.</div></div>
+        <div class="num">11</div>
+        <div class="note-text"><div class="t">Day-one users get an explanation, not a blank or fabricated screen</div>
+        <div class="d">The New user state explains why each card is empty and what unlocks it, instead of inventing a pattern that doesn't exist yet.</div></div>
       </div>
 
-      <div class="cat-label">Reversibility & trust</div>
+      <div class="cat-label">Open</div>
       <div class="note">
-        <div class="num">06</div>
-        <div class="note-text"><div class="t">"Why am I seeing this" used to go nowhere<span class="tag fixed">FIXED</span></div>
-        <div class="d">It now expands inline with the actual reasoning ("based on 14 days...") and states the dismissal rule plainly, instead of being a transparency gesture with no follow-through.</div></div>
+        <div class="num">12</div>
+        <div class="note-text"><div class="t">Missed task names are visible on a shared or unlocked screen<span class="tag open">OPEN</span></div>
+        <div class="d">"Submit expense report" sitting on a home screen is fine alone, less fine on a lock-screen preview or a screen-share. Worth a "blur sensitive task names" setting.</div></div>
       </div>
       <div class="note">
-        <div class="num">07</div>
-        <div class="note-text"><div class="t">A mis-tap on "Move it" or "Not now" was permanent<span class="tag fixed">FIXED</span></div>
-        <div class="d">Both actions now confirm what happened and offer Undo for a few seconds — small, but it's the difference between a tool that tolerates a fat-thumb tap and one that punishes it.</div></div>
-      </div>
-
-      <div class="cat-label">Privacy & social</div>
-      <div class="note">
-        <div class="num">08</div>
-        <div class="note-text"><div class="t">Missed task names are visible on a shared or unlocked screen<span class="tag flag">FLAGGED</span></div>
-        <div class="d">"Submit expense report" sitting on a home screen is fine alone, less fine on a lock-screen preview or a screen-share. Worth a "blur sensitive task names" setting, not solved at the mockup layer here.</div></div>
-      </div>
-      <div class="note">
-        <div class="num">09</div>
-        <div class="note-text"><div class="t">Jordan's streak is shown to someone else without Jordan asked<span class="tag flag">FLAGGED</span></div>
-        <div class="d">The kudos card surfaces another person's activity. That needs its own opt-in on Jordan's side — "let friends see your streaks for kudos" — not just the viewer's settings.</div></div>
+        <div class="num">13</div>
+        <div class="note-text"><div class="t">Jordan's streak is shown to someone else without Jordan's consent<span class="tag open">OPEN</span></div>
+        <div class="d">The kudos card surfaces another person's activity. That needs its own opt-in on Jordan's side, not just the viewer's settings.</div></div>
       </div>
     </div>
   </div>
@@ -237,87 +185,55 @@
   <div class="section">
     <div class="frame-col">
       <div class="section-title">2. Agent onboarding</div>
-      <div class="section-sub">4-step flow, shown here at step 1</div>
+      <div class="section-sub">Single-step wizard — Back / Continue / Skip move between steps, with state preserved</div>
       <div class="frame"><iframe src="agent_onboarding_mockup.html" scrolling="no"></iframe></div>
     </div>
     <div class="notes">
 
-      <div class="cat-label">Original design rationale</div>
-      <div class="note">
-        <div class="num">R8</div>
-        <div class="note-text"><div class="t">"Skip for now" on every step</div>
-        <div class="d">Personalization is additive, never a gate — someone can reach the product without answering anything.</div></div>
-      </div>
-      <div class="note">
-        <div class="num">R9</div>
-        <div class="note-text"><div class="t">No right-answer framing on planning style</div>
-        <div class="d">Subhead states directly that there's no correct option — pre-empts the instinct to answer how the agent "wants" rather than how they actually behave.</div></div>
-      </div>
-      <div class="note">
-        <div class="num">R10</div>
-        <div class="note-text"><div class="t">Two separate sliders: frequency and tone</div>
-        <div class="d">Avoids collapsing "how much" and "how it sounds" into one setting — users may want light-touch + cheerful, or frequent + quiet.</div></div>
-      </div>
-      <div class="note">
-        <div class="num">R11</div>
-        <div class="note-text"><div class="t">"Nudges are suggestions, not alerts"</div>
-        <div class="d">Sets expectations before the user has received a single nudge — reframes the relationship from the start.</div></div>
-      </div>
-      <div class="note">
-        <div class="num">R12</div>
-        <div class="note-text"><div class="t">Editable summary before commit</div>
-        <div class="d">Final step shows everything back with per-item "Edit," so onboarding ends with confirmation, not a black box.</div></div>
-      </div>
-      <div class="note">
-        <div class="num">R13</div>
-        <div class="note-text"><div class="t">Privacy stated inline, not just in a policy doc</div>
-        <div class="d">"None of this is shown to friends unless you choose to share it" appears in the flow itself, where the decision is actually being made.</div></div>
-      </div>
-
-      <div class="cat-label">Expectation-setting</div>
-      <div class="note">
-        <div class="num">10</div>
-        <div class="note-text"><div class="t">No sense of how long this takes<span class="tag fixed">FIXED</span></div>
-        <div class="d">A bare progress bar doesn't tell anyone if they're 30 seconds or 10 minutes from done. "~1 MIN" per step sets a realistic bar so people don't bail assuming it's longer.</div></div>
-      </div>
-      <div class="note">
-        <div class="num">11</div>
-        <div class="note-text"><div class="t">"Skip" read as abandoning setup entirely<span class="tag fixed">FIXED</span></div>
-        <div class="d">Now reads "Skip for now — you can set this up later," which removes the fear that skipping forfeits personalization permanently.</div></div>
-      </div>
-      <div class="note">
-        <div class="num">12</div>
-        <div class="note-text"><div class="t">Sliders had no affordance hint<span class="tag fixed">FIXED</span></div>
-        <div class="d">A flat track can look static rather than draggable. A small "Drag to adjust" caption removes any doubt about whether it's interactive.</div></div>
-      </div>
-
-      <div class="cat-label">Trust & transparency</div>
-      <div class="note">
-        <div class="num">13</div>
-        <div class="note-text"><div class="t">"Light touch" nudges still had no ceiling stated<span class="tag fixed">FIXED</span></div>
-        <div class="d">The privacy note on step 2 now explicitly mentions a visible daily limit in settings, so "light touch" isn't just a vibe — there's a concrete number behind it.</div></div>
-      </div>
+      <div class="cat-label">Tone & framing</div>
       <div class="note">
         <div class="num">14</div>
-        <div class="note-text"><div class="t">No way to learn more before committing<span class="tag fixed">FIXED</span></div>
-        <div class="d">Added a "Learn more about how this data is used" link on the confirm step for anyone who wants the longer explanation before finishing, without forcing it on everyone.</div></div>
+        <div class="note-text"><div class="t">"Skip for now" is on every step, and worded so it's clearly reversible</div>
+        <div class="d">Personalization is additive, never a gate — "you can set this up later" removes the fear that skipping forfeits it permanently.</div></div>
       </div>
       <div class="note">
         <div class="num">15</div>
-        <div class="note-text"><div class="t">Did closing the app mid-flow lose progress?<span class="tag fixed">FIXED</span></div>
-        <div class="d">"Your answers save automatically as you go" on the final step removes the anxiety of a half-finished setup vanishing if someone gets interrupted.</div></div>
+        <div class="note-text"><div class="t">No right-answer framing on planning style</div>
+        <div class="d">The subhead states directly that there's no correct option — pre-empts the instinct to answer how the agent "wants" rather than how someone actually behaves.</div></div>
       </div>
-
-      <div class="cat-label">Validation</div>
       <div class="note">
         <div class="num">16</div>
-        <div class="note-text"><div class="t">What happens if no focus times are selected?<span class="tag flag">FLAGGED</span></div>
-        <div class="d">Step 3 allows zero selections with no guardrail. Needs either a soft minimum-one nudge or an explicit fallback message: "We'll use your activity instead."</div></div>
+        <div class="note-text"><div class="t">Two separate sliders: frequency and tone</div>
+        <div class="d">Avoids collapsing "how much" and "how it sounds" into one setting — someone may want light-touch + cheerful, or frequent + quiet. Both are draggable, with keyboard arrow-key support.</div></div>
       </div>
       <div class="note">
         <div class="num">17</div>
-        <div class="note-text"><div class="t">No calendar-conflict awareness in nudge timing<span class="tag flag">FLAGGED</span></div>
-        <div class="d">Onboarding asks when someone's sharpest, but a later nudge ("Move to 8:40am?") could land on a meeting. Worth checking calendar availability before suggesting a time, not just historical pattern.</div></div>
+        <div class="note-text"><div class="t">"Nudges are suggestions, not alerts," with a stated daily ceiling</div>
+        <div class="d">Sets expectations before a single nudge has been sent, and points to a concrete limit in settings so "light touch" isn't just a vibe.</div></div>
+      </div>
+
+      <div class="cat-label">Trust through the flow</div>
+      <div class="note">
+        <div class="num">18</div>
+        <div class="note-text"><div class="t">Time estimate per step, plus an autosave note at the end</div>
+        <div class="d">"~1 MIN" sets a realistic bar so people don't bail assuming it's longer; "your answers save automatically" removes the anxiety of losing progress mid-flow.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">19</div>
+        <div class="note-text"><div class="t">A real "Learn more" panel, and an editable, live summary before commit</div>
+        <div class="d">"Learn more about how this data is used" expands inline with the longer explanation. The confirm screen reads back your actual choices from every prior step — not placeholder text — and each item links straight back to where it came from.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">20</div>
+        <div class="note-text"><div class="t">Deselecting every focus time has an explicit fallback</div>
+        <div class="d">"No pattern yet — we'll use your activity instead" replaces a silent, unexplained zero-selection state.</div></div>
+      </div>
+
+      <div class="cat-label">Open</div>
+      <div class="note">
+        <div class="num">21</div>
+        <div class="note-text"><div class="t">No calendar-conflict awareness in nudge timing<span class="tag open">OPEN</span></div>
+        <div class="d">Onboarding asks when someone's sharpest, but a later nudge ("Move to 8:40am?") could land on a meeting. Worth checking calendar availability, not just historical pattern.</div></div>
       </div>
     </div>
   </div>
@@ -326,82 +242,76 @@
   <div class="section">
     <div class="frame-col">
       <div class="section-title">3. Agent settings</div>
-      <div class="section-sub">Shown with the "Turn off agent" confirmation sheet open</div>
+      <div class="section-sub">Every row is interactive — try "Pause agent," now sitting above "Turn off"</div>
       <div class="frame tall"><iframe src="agent_settings_mockup.html" scrolling="no"></iframe></div>
     </div>
     <div class="notes">
 
-      <div class="cat-label">Original design rationale</div>
+      <div class="cat-label">Trust in what the agent learned</div>
       <div class="note">
-        <div class="num">R14</div>
-        <div class="note-text"><div class="t">"From you" vs. "Inferred" tags</div>
-        <div class="d">Distinguishes what the user explicitly stated from what the agent observed — corrections feel like fixing a guess, not arguing with the system.</div></div>
+        <div class="num">22</div>
+        <div class="note-text"><div class="t">"From you" vs. "Inferred" tags, and corrections always win</div>
+        <div class="d">Distinguishes what the user explicitly stated from what the agent observed — and states plainly that a correction overrides what's inferred, so fixing it feels like correcting a guess, not arguing with the system.</div></div>
       </div>
       <div class="note">
-        <div class="num">R15</div>
-        <div class="note-text"><div class="t">Correction always wins, stated explicitly</div>
-        <div class="d">The note under "What the agent has learned" commits to this in writing, not just in backend logic — sets a trust expectation the team has to honor.</div></div>
+        <div class="num">23</div>
+        <div class="note-text"><div class="t">"See exactly what data this uses" is a real, working link</div>
+        <div class="d">Opens an explanation of what's self-reported vs. inferred and confirms nothing leaves the account unless the person taps Export.</div></div>
+      </div>
+
+      <div class="cat-label">Fatigue & scoring</div>
+      <div class="note">
+        <div class="num">24</div>
+        <div class="note-text"><div class="t">"Auto-reduce when ignored" is a visible, working toggle</div>
+        <div class="d">The fatigue-protection guardrail isn't just backend behavior — it's something the user can see is on, building confidence the agent won't nag.</div></div>
       </div>
       <div class="note">
-        <div class="num">R16</div>
-        <div class="note-text"><div class="t">"Auto-reduce when ignored" is a visible toggle</div>
-        <div class="d">The fatigue-protection guardrail isn't just backend behavior — it's surfaced as something the user can see is on, building confidence the agent won't nag.</div></div>
-      </div>
-      <div class="note">
-        <div class="num">R17</div>
+        <div class="num">25</div>
         <div class="note-text"><div class="t">Score display is off by default</div>
         <div class="d">Trend view is the default experience; the single productivity number is opt-in, reversing the typical "score-first" pattern of habit apps.</div></div>
       </div>
-      <div class="note">
-        <div class="num">R18</div>
-        <div class="note-text"><div class="t">Friend sharing defaults to off, kudos defaults to on</div>
-        <div class="d">Low-stakes social (suggesting kudos) and higher-stakes social (sharing your own progress/scores) are split into separate toggles with different defaults.</div></div>
-      </div>
-      <div class="note">
-        <div class="num">R19</div>
-        <div class="note-text"><div class="t">Reset and turn-off are easy to find, not hidden</div>
-        <div class="d">Leaving personalization is a plain list item, not a multi-step retention flow — consistent with personalization being additive, not a trap.</div></div>
-      </div>
 
-      <div class="cat-label">Destructive-action safety</div>
+      <div class="cat-label">Reversibility & commitment levels</div>
       <div class="note">
-        <div class="num">18</div>
-        <div class="note-text"><div class="t">Turn-off and delete were one tap, no confirmation<span class="tag fixed">FIXED</span></div>
-        <div class="d">Both now open a confirmation sheet that states plainly what's kept and what's lost, with Cancel as the visually equal option — not a quiet "are you sure" buried in a tiny link.</div></div>
+        <div class="num">26</div>
+        <div class="note-text"><div class="t">Four distinct levels: Need a break, Pause agent, Turn off, Delete</div>
+        <div class="d">"Need a break" pauses nudges only — briefings and reports keep going. "Pause agent" (new, sits above "Turn off") stops everything for a chosen duration and resumes automatically. "Turn off" is indefinite until manually resumed. "Delete" is the only one that's permanent. Each is a meaningfully different commitment, not variations of one button.</div></div>
       </div>
       <div class="note">
-        <div class="num">19</div>
-        <div class="note-text"><div class="t">"Turn off" and "delete everything" were the same action<span class="tag fixed">FIXED</span></div>
-        <div class="d">Split into four distinct rows — Export, Reset, Delete, Turn off — because pausing personalization and permanently erasing history are very different stakes and shouldn't share one button.</div></div>
-      </div>
-      <div class="note">
-        <div class="num">20</div>
-        <div class="note-text"><div class="t">All-or-nothing nudges: on, or fully off<span class="tag fixed">FIXED</span></div>
-        <div class="d">"Need a break?" adds Today / 1 week / Until I turn it back on — a lower-commitment middle ground for someone who's overwhelmed this week but doesn't want to lose the setup entirely.</div></div>
+        <div class="num">27</div>
+        <div class="note-text"><div class="t">Destructive or paused states always confirm and show their effect</div>
+        <div class="d">Confirming a pause, turn-off, or delete opens a sheet stating exactly what's kept and lost, then shows a banner reflecting what actually happened — pause and turn-off offer Resume / Turn back on and dim the sections that stop updating; delete shows its own message ("patterns and history are gone, starting fresh") since resuming isn't really what happened there, and the agent stays active rather than appearing off.</div></div>
       </div>
 
       <div class="cat-label">Accessibility & control</div>
       <div class="note">
-        <div class="num">21</div>
-        <div class="note-text"><div class="t">Toggle state relied on color alone<span class="tag fixed">FIXED</span></div>
-        <div class="d">The knob's position (left/right) and background fill both change, so state reads correctly even for users who can't distinguish the on/off color difference.</div></div>
+        <div class="num">28</div>
+        <div class="note-text"><div class="t">Toggle state never relies on color alone</div>
+        <div class="d">The knob's position and the background fill both change, so state reads correctly even for users who can't distinguish the on/off color difference.</div></div>
       </div>
       <div class="note">
-        <div class="num">22</div>
-        <div class="note-text"><div class="t">No way to reduce visual intensity for light sensitivity<span class="tag fixed">FIXED</span></div>
-        <div class="d">Added a Light / Dark / Auto theme control under Appearance — relevant for migraine, light sensitivity, and plain preference, not just an aesthetic option.</div></div>
+        <div class="num">29</div>
+        <div class="note-text"><div class="t">Light / Dark / Auto is a real, working theme swap</div>
+        <div class="d">Relevant for migraine, light sensitivity, and plain preference — selecting Dark actually re-themes the screen rather than just marking a button as selected.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">30</div>
+        <div class="note-text"><div class="t">Friend sharing defaults to off, kudos suggestions default to on</div>
+        <div class="d">Low-stakes social (suggesting kudos) and higher-stakes social (sharing your own progress/scores) are split into separate toggles with different defaults.</div></div>
       </div>
 
       <div class="cat-label">Data rights</div>
       <div class="note">
-        <div class="num">23</div>
-        <div class="note-text"><div class="t">No way to get your data out before leaving<span class="tag fixed">FIXED</span></div>
-        <div class="d">"Export my agent data" sits above the destructive options — someone shouldn't have to choose between keeping a copy and deleting their data.</div></div>
+        <div class="num">31</div>
+        <div class="note-text"><div class="t">Export sits above the destructive options</div>
+        <div class="d">Someone shouldn't have to choose between keeping a copy of their data and deleting it — exporting is always available first.</div></div>
       </div>
+
+      <div class="cat-label">Open</div>
       <div class="note">
-        <div class="num">24</div>
-        <div class="note-text"><div class="t">"What the agent has learned" had no audit trail<span class="tag flag">FLAGGED</span></div>
-        <div class="d">"See exactly what data this uses" is linked but not yet designed — needs its own screen showing the specific signals (which days, which tasks) feeding each inferred trait.</div></div>
+        <div class="num">32</div>
+        <div class="note-text"><div class="t">"What the agent has learned" still has no audit trail<span class="tag open">OPEN</span></div>
+        <div class="d">"See exactly what data this uses" explains the categories but not a full screen showing the specific signals (which days, which tasks) feeding each inferred trait.</div></div>
       </div>
     </div>
   </div>
@@ -419,47 +329,47 @@
     <li>Blurring or hiding sensitive task names on lock screen / screen-share</li>
     <li>Friend-side consent for surfacing their streaks in someone else's kudos card</li>
     <li>Customizable kudos message instead of a single canned send</li>
-    <li>Minimum-selection handling on the focus-time step</li>
     <li>Cross-device sync messaging (is this account-level or per-device?)</li>
     <li>Longer translated strings breaking chip/button layout (i18n)</li>
     <li>RTL layout mirroring for the thread motif and card alignment</li>
     <li>Age-appropriate defaults if the product is ever opened to minors</li>
+    <li>An actual screen behind "See exactly what data this uses," not just a sheet</li>
+    <li>"Add friends" in the New user state isn't wired to anything yet</li>
   </ul>
 </div>
 
 <div class="legend">
-  <h2>Maps back to a hardened guardrail set</h2>
-  <p>The v1 guardrails (tone, transparency, fatigue protection, scoring risk, opt-in social, additive personalization) still hold. These three are new categories that came out of this pass.</p>
+  <h2>Guardrails these decisions map back to</h2>
+  <p>The recurring principles behind the choices above, grouped so they're easy to check new features against.</p>
   <div class="legend-grid">
     <div class="legend-cat">
-      <h3>Accessibility</h3>
+      <h3>Tone & framing</h3>
       <ul>
-        <li><b>Never color-only</b> — shape, glyph, or position always carries state too</li>
-        <li><b>AA contrast minimum</b> — checked, not assumed, for every text-on-light pairing</li>
-        <li><b>Real touch targets</b> — sized for a thumb, not just a cursor</li>
+        <li><b>Describe, don't judge</b> — patterns and reasons are stated neutrally, never as a verdict on the person</li>
+        <li><b>No single score by default</b> — trends first, a number only if asked for</li>
       </ul>
     </div>
     <div class="legend-cat">
       <h3>Reversibility</h3>
       <ul>
-        <li><b>Undo where it's cheap</b> — nudge actions, in particular</li>
+        <li><b>Undo where it's cheap</b> — nudge and kudos actions, in particular</li>
         <li><b>Confirm where it's not</b> — anything destructive gets a sheet, not a tap</li>
-        <li><b>Pause before quit</b> — a lower-commitment option above full opt-out</li>
+        <li><b>Graduated commitment</b> — pause, turn off, and delete are not the same decision</li>
+      </ul>
+    </div>
+    <div class="legend-cat">
+      <h3>Accessibility</h3>
+      <ul>
+        <li><b>Never color-only</b> — shape, glyph, or position always carries state too</li>
+        <li><b>AA contrast minimum</b>, real touch targets, and working theme control</li>
       </ul>
     </div>
     <div class="legend-cat">
       <h3>Honesty about state</h3>
       <ul>
         <li><b>Cold start is designed, not blank</b> — day-one users get an explanation</li>
-        <li><b>Queues are visible</b> — "1 of 2" beats silently picking one nudge</li>
+        <li><b>Queues and effects are visible</b> — "1 of 2," a banner when paused, a real Export</li>
         <li><b>Transparency links resolve</b> — no link that dead-ends</li>
-      </ul>
-    </div>
-    <div class="legend-cat">
-      <h3>Data rights</h3>
-      <ul>
-        <li><b>Export before delete</b> — never force a choice between the two</li>
-        <li><b>Granular destructive actions</b> — pause, reset, delete, and turn off are not the same button</li>
       </ul>
     </div>
   </div>
